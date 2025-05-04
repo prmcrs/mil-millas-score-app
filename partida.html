@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MIL MILLAS - Partida</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1 id="tituloPartida">Partida de MIL MILLAS</h1>
+  <ul id="listaJugadores"></ul>
+  <div id="tablaResumen"></div>
+
+  <div id="mensajeFinalizada" style="display: none; color: red; font-weight: bold;">
+    Esta partida está finalizada. No se pueden agregar más manos.
+  </div>
+  <form id="formMano">
+    <div id="formJugadores"></div>
+    <button type="submit">Agregar Mano</button>
+  </form>
+
+  <footer>
+    <p>Made by AI with PABLO</p>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    const mensajeFinalizada = document.getElementById('mensajeFinalizada');
+    const formPartida = document.getElementById('formMano');
+    if (partida.finalizada) {
+      mensajeFinalizada.style.display = 'block';
+      formPartida.style.display = 'none';
+    }
+  </script>
+</body>
+</html>

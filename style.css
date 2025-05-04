@@ -1,0 +1,91 @@
+/* style.css */
+body {
+  font-family: 'Arial', sans-serif;
+  padding: 1rem;
+  background: #f4f4f4;
+  max-width: 800px;
+  margin: 0 auto;
+  color: #333;
+}
+
+h1, h2 {
+  color: #333;
+  text-align: center;
+}
+
+form {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-top: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+input, select, label {
+  width: 100%;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+input[type="checkbox"] {
+  width: auto;
+}
+
+button {
+  padding: 0.8rem;
+  background: #0078d4;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+  font-size: 1rem;
+}
+
+button:hover {
+  background: #005fa3;
+}
+
+#tablaResumen {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#partidasActivas {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#partidasActivas ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+#partidasActivas li {
+  padding: 0.5rem;
+  border-bottom: 1px solid #ddd;
+}
+
+#partidasActivas li:last-child {
+  border-bottom: none;
+}
+
+#partidasActivas a {
+  color: #0078d4;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+#partidasActivas a:hover {
+  text-decoration: underline;
+}

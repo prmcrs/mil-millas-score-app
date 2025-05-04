@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MIL MILLAS</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>MIL MILLAS</h1>
+  <h2>Crear nueva partida</h2>
+
+  <form id="formNuevaPartida">
+    <label>
+      Nombre de la partida:
+      <input type="text" id="nombrePartida" required>
+    </label>
+    <br><br>
+
+    <label>
+      Modo de juego:
+      <select id="modoJuego" required>
+        <option value="individual">Individual</option>
+        <option value="equipos">Equipos</option>
+      </select>
+    </label>
+    <br><br>
+
+    <div id="opcionesIndividual" style="display:none;">
+      <label>
+        Cantidad de jugadores:
+        <select id="cantidadJugadores">
+          <option value="2">2</option>
+          <option value="3">3</option>
+        </select>
+      </label>
+    </div>
+
+    <div id="camposJugadores"></div>
+
+    <button type="submit">Crear partida</button>
+  </form>
+
+  <hr>
+
+  <h3>Partidas activas:</h3>
+  <ul id="partidasActivas"></ul>
+
+  <h3>Partidas finalizadas:</h3>
+  <ul id="partidasFinalizadas"></ul>
+
+  <footer>
+    <p>Made by AI with PABLO</p>
+  </footer>
+
+  <script>
+    const modoJuego = document.getElementById('modoJuego');
+    const cantidadJugadores = document.getElementById('cantidadJugadores');
+    const opcionesIndividual = document.getElementById('opcionesIndividual');
+    const camposJugadores = document.getElementById('camposJugadores');
+    const form = document.getElementById('formNuevaPartida');
+    const partidasActivas = document.getElementById('partidasActivas');
+
+    let modoActual = 'individual';
+
+    function renderCampos() {
+      camposJugadores.innerHTML = '';
+
+      if (modoActual === 'individual') {
+        opcionesIndividual.style.display = 'block';
+        const cant = parseInt(cantidadJugadores.value);
+        for (let i = 1; i <= cant; i++) {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.placeholder = `Nombre jugador ${i}`;
+          input.required = true;
+          input.name = `jugador${i}`;
+          camposJugadores.appendChild(input);
+          camposJugadores.appendChild(document.createElement('br'));
+        }
+      } else {
+        opcionesIndividual.style.display = 'none';
+        for (let i = 1; i <= 2; i++) {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.placeholder = `Nombre equipo ${i}`;
+          input.required = true;
+          input.name = `equipo${i}`;
+          camposJugadores.appendChild(input);
+          camposJugadores.appendChild(document.createElement('br'));
+        }
+      }
+    }
+
+    modoJuego.addEventListener('change', () => {
+      modoActual = modoJuego.value;
+      renderCampos();
+    });
+
+    cantidadJugadores.addEventListener('change', renderCampos);
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const nombrePartida = document.getElementById('nombrePartida').value.trim();
+      const id = 'partida-' + Date.now();
+      const modo = modoJuego.value;
+      const participantes = [];
+
+      const inputs = camposJugadores.querySelectorAll('input');
+      inputs.forEach(input => {
+        participantes.push(input.value.trim());
+      });
+
+      const partida = {
+        id,
+        nombre: nombrePartida,
+        modo,
+        participantes,
+        manos: []
+      };
+
+      const partidas = JSON.parse(localStorage.getItem('partidas')) || [];
+      partidas.push(partida);
+      localStorage.setItem('partidas', JSON.stringify(partidas));
+      localStorage.setItem('partidaActiva', id);
+
+      window.location.href = 'partida.html';
+    });
+
+    function cargarPartidasActivas() {
+      const partidas = JSON.parse(localStorage.getItem('partidas')) || [];
+
+      partidasActivas.innerHTML = '';
+
+      partidas.forEach(partida => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = 'partida.html';
+        a.textContent = `${partida.nombre} (${partida.participantes.join(' vs ')})`;
+        a.addEventListener('click', () => {
+          localStorage.setItem('partidaActiva', partida.id);
+        });
+        li.appendChild(a);
+        partidasActivas.appendChild(li);
+      });
+    }
+
+    function cargarPartidasFinalizadas() {
+      const partidas = JSON.parse(localStorage.getItem('partidas')) || [];
+      const partidasFinalizadas = document.getElementById('partidasFinalizadas');
+
+      partidasFinalizadas.innerHTML = '';
+
+      partidas
+        .filter(partida => partida.partida.finalizada)
+        .sort((a, b) => new Date(b.partida.fechaCreacion) - new Date(a.partida.fechaCreacion))
+        .forEach(partida => {
+          const li = document.createElement('li');
+          li.textContent = `${partida.partida.nombre}`;
+          partidasFinalizadas.appendChild(li);
+        });
+    }
+
+    // Al cargar
+    modoJuego.value = 'individual';
+    renderCampos();
+    cargarPartidasActivas();
+    cargarPartidasFinalizadas();
+  </script>
+</body>
+</html>
