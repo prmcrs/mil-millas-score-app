@@ -3,8 +3,8 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 3000; // Updated to use process.env.PORT
-const DATA_FILE = path.join(__dirname, 'partidas.json');
+const PORT = process.env.PORT || 3000; 
+const DATA_FILE = path.join(__dirname, 'partidas', 'partidas.json');
 
 app.use(express.json());
 
