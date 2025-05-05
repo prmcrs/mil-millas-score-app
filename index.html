@@ -187,7 +187,7 @@
 
     cantidadJugadores.addEventListener('change', renderCampos);
 
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const nombrePartida = document.getElementById('nombrePartida').value.trim();
@@ -205,10 +205,26 @@
         nombre: nombrePartida,
         modo,
         participantes,
-        manos: []
+        manos: [],
+        finalizada: false
       };
 
-      window.location.href = 'partida.html';
+      try {
+        const response = await fetch('/api/partidas', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(partida)
+        });
+
+        if (response.ok) {
+          window.location.href = `partida.html?id=${id}`;
+        } else {
+          throw new Error('Error al guardar la partida en el servidor');
+        }
+      } catch (error) {
+        console.error('Error al crear la partida:', error);
+        alert('No se pudo crear la partida. Verifica el servidor.');
+      }
     });
 
     async function cargarPartidasActivas() {

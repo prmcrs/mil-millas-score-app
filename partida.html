@@ -68,6 +68,14 @@
 
     checkLogin();
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const partidaId = urlParams.get('id');
+
+    if (!partidaId) {
+      alert('No se encontró el ID de la partida. Redirigiendo al inicio.');
+      window.location.href = 'index.html';
+    }
+
     const mensajeFinalizada = document.getElementById('mensajeFinalizada');
     const formPartida = document.getElementById('formMano');
     const resumenDiv = document.getElementById('tablaResumen');
