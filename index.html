@@ -254,13 +254,16 @@
           partidas
             .filter(partida => !partida.finalizada)
             .forEach(partida => {
-              const li = document.createElement('li');
-              li.className = 'list-group-item';
-              const a = document.createElement('a');
-              a.href = `partida.html?id=${partida.id}`;
-              a.textContent = `${partida.nombre} (${partida.participantes.join(' vs ')})`;
-              li.appendChild(a);
-              partidasActivas.appendChild(li);
+              const div = document.createElement('div');
+              div.className = 'card mb-2';
+              div.innerHTML = `
+                <div class="card-body">
+                  <a href="partida.html?id=${partida.id}" class="text-decoration-none text-primary fw-bold">
+                    ${partida.nombre} (${partida.participantes.join(' vs ')})
+                  </a>
+                </div>
+              `;
+              partidasActivas.appendChild(div);
             });
         } else {
           throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -277,20 +280,25 @@
         if (response.ok) {
           const partidas = await response.json();
           partidasFinalizadas.innerHTML = '';
-
           partidas
             .filter(partida => partida.finalizada)
             .forEach(partida => {
-              const li = document.createElement('li');
-              li.textContent = partida.nombre;
-              partidasFinalizadas.appendChild(li);
+              const div = document.createElement('div');
+              div.className = 'card mb-2';
+              div.innerHTML = `
+                <div class="card-body">
+                  <a href="partida.html?id=${partida.id}" class="text-decoration-none text-secondary fw-bold">
+                    ${partida.nombre} (${partida.participantes.join(' vs ')})
+                  </a>
+                </div>
+              `;
+              partidasFinalizadas.appendChild(div);
             });
         } else {
-          console.error(`Error al obtener las partidas finalizadas: ${response.status} ${response.statusText}`);
-          throw new Error('Error al obtener las partidas finalizadas');
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
         }
       } catch (error) {
-        console.error('Detalles del error al cargar partidas finalizadas:', error);
+        console.error('Error al cargar partidas finalizadas:', error);
         alert('No se pudieron cargar las partidas finalizadas.');
       }
     }
