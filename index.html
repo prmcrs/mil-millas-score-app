@@ -19,51 +19,14 @@
     h1, h2, h3 {
       text-align: center;
     }
-
-    #partidasContainer {
-      display: flex;
-      justify-content: space-around;
-      margin: 20px;
-    }
-
-    #partidasActivas, #partidasFinalizadas {
-      width: 45%;
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 15px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    ul li {
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
-    }
-
-    ul li:last-child {
-      border-bottom: none;
-    }
-
-    ul li a {
-      text-decoration: none;
-      color: #007BFF;
-    }
-
-    ul li a:hover {
-      text-decoration: underline;
-    }
   </style>
 </head>
 <body>
   <h1>MIL MILLAS</h1>
 
   <div class="container mt-4">
-    <div class="card">
+    <!-- Tarjeta de Bienvenida -->
+    <div class="card mb-4">
       <div class="row g-0 align-items-center">
         <div class="col-md-8">
           <div class="card-body">
@@ -79,16 +42,29 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <div id="partidasContainer">
-    <div id="partidasActivas">
-      <h3>Partidas activas:</h3>
-      <ul></ul>
-    </div>
-    <div id="partidasFinalizadas">
-      <h3>Partidas finalizadas:</h3>
-      <ul></ul>
+    <!-- Tarjetas de Partidas Activas y Finalizadas -->
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Partidas activas</h5>
+            <ul id="partidasActivas" class="list-group list-group-flush">
+              <!-- Las partidas activas se cargarán dinámicamente aquí -->
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Partidas finalizadas</h5>
+            <ul id="partidasFinalizadas" class="list-group list-group-flush">
+              <!-- Las partidas finalizadas se cargarán dinámicamente aquí -->
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
