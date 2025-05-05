@@ -41,7 +41,6 @@
       <div class="card-body">
         <h1 id="tituloPartida" class="card-title text-center text-primary">Partida de MIL MILLAS</h1>
         <h5 id="subtituloPartida" class="text-center text-secondary"></h5>
-        <ul id="listaJugadores" class="list-group list-group-flush"></ul>
         <div id="tablaResumen" class="mt-4"></div>
         <div id="mensajeFinalizada" class="alert alert-danger mt-4" style="display: none;">
           Esta partida está finalizada. No se pueden agregar más manos.
@@ -120,16 +119,6 @@
           // Actualizar subtítulo con nombres de equipos o jugadores
           const subtitulo = document.getElementById('subtituloPartida');
           subtitulo.textContent = partida.participantes.join(' vs ');
-
-          // Render jugadores
-          const listaJugadores = document.getElementById('listaJugadores');
-          listaJugadores.innerHTML = '';
-          partida.participantes.forEach(jugador => {
-            const li = document.createElement('li');
-            li.className = 'list-group-item';
-            li.textContent = jugador;
-            listaJugadores.appendChild(li);
-          });
 
           // Generar campos dinámicos para el formulario
           const formJugadores = document.getElementById('formJugadores');
