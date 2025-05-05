@@ -60,10 +60,41 @@
     const formPartida = document.getElementById('formMano');
     const resumenDiv = document.getElementById('tablaResumen');
 
+    async function obtenerPartida() {
+      try {
+        const response = await fetch(`/api/partidas/${partidaId}`);
+        if (response.ok) {
+          return await response.json();
+        } else {
+          throw new Error('Error al obtener la partida del servidor');
+        }
+      } catch (error) {
+        console.error(error);
+        alert('No se pudo cargar la partida. Verifica el servidor.');
+        return null;
+      }
+    }
+
+    async function guardarPartida(partida) {
+      try {
+        const response = await fetch(`/api/partidas/${partida.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(partida)
+        });
+        if (!response.ok) {
+          throw new Error('Error al guardar la partida en el servidor');
+        }
+      } catch (error) {
+        console.error(error);
+        alert('No se pudo guardar la partida. Verifica el servidor.');
+      }
+    }
+
     obtenerPartida().then(partida => {
       if (!partida) {
         resumenDiv.innerHTML = "<p>No se pudo cargar la partida. Verifica el servidor.</p>";
-        formPartida.style.display = 'none'; // Ocultamos el formulario si no hay partida
+        formPartida.style.display = 'none';
         return;
       }
 

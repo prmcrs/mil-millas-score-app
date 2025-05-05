@@ -92,6 +92,7 @@
     const camposJugadores = document.getElementById('camposJugadores');
     const form = document.getElementById('formNuevaPartida');
     const partidasActivas = document.getElementById('partidasActivas');
+    const partidasFinalizadas = document.getElementById('partidasFinalizadas');
 
     let modoActual = 'individual';
 
@@ -152,46 +153,56 @@
         manos: []
       };
 
-      const partidas = JSON.parse(localStorage.getItem('partidas')) || [];
-      partidas.push(partida);
-      localStorage.setItem('partidas', JSON.stringify(partidas));
-      localStorage.setItem('partidaActiva', id);
-
       window.location.href = 'partida.html';
     });
 
-    function cargarPartidasActivas() {
-      const partidas = JSON.parse(localStorage.getItem('partidas')) || [];
+    async function cargarPartidasActivas() {
+      try {
+        const response = await fetch('/api/partidas');
+        if (response.ok) {
+          const partidas = await response.json();
+          partidasActivas.innerHTML = '';
 
-      partidasActivas.innerHTML = '';
-
-      partidas.forEach(partida => {
-        const li = document.createElement('li');
-        const a = document.createElement('a');
-        a.href = 'partida.html';
-        a.textContent = `${partida.nombre} (${partida.participantes.join(' vs ')})`;
-        a.addEventListener('click', () => {
-          localStorage.setItem('partidaActiva', partida.id);
-        });
-        li.appendChild(a);
-        partidasActivas.appendChild(li);
-      });
+          partidas
+            .filter(partida => !partida.finalizada)
+            .forEach(partida => {
+              const li = document.createElement('li');
+              const a = document.createElement('a');
+              a.href = `partida.html?id=${partida.id}`;
+              a.textContent = `${partida.nombre} (${partida.participantes.join(' vs ')})`;
+              li.appendChild(a);
+              partidasActivas.appendChild(li);
+            });
+        } else {
+          throw new Error('Error al obtener las partidas activas');
+        }
+      } catch (error) {
+        console.error(error);
+        alert('No se pudieron cargar las partidas activas.');
+      }
     }
 
-    function cargarPartidasFinalizadas() {
-      const partidas = JSON.parse(localStorage.getItem('partidas')) || [];
-      const partidasFinalizadas = document.getElementById('partidasFinalizadas');
+    async function cargarPartidasFinalizadas() {
+      try {
+        const response = await fetch('/api/partidas');
+        if (response.ok) {
+          const partidas = await response.json();
+          partidasFinalizadas.innerHTML = '';
 
-      partidasFinalizadas.innerHTML = '';
-
-      partidas
-        .filter(partida => partida.partida.finalizada)
-        .sort((a, b) => new Date(b.partida.fechaCreacion) - new Date(a.partida.fechaCreacion))
-        .forEach(partida => {
-          const li = document.createElement('li');
-          li.textContent = `${partida.partida.nombre}`;
-          partidasFinalizadas.appendChild(li);
-        });
+          partidas
+            .filter(partida => partida.finalizada)
+            .forEach(partida => {
+              const li = document.createElement('li');
+              li.textContent = partida.nombre;
+              partidasFinalizadas.appendChild(li);
+            });
+        } else {
+          throw new Error('Error al obtener las partidas finalizadas');
+        }
+      } catch (error) {
+        console.error(error);
+        alert('No se pudieron cargar las partidas finalizadas.');
+      }
     }
 
     // Al cargar
