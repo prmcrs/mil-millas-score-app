@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MIL MILLAS - Partida</title>
+  <title>Partida actual de Mil Millas 🏎️</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <link rel="stylesheet" href="style.css">
@@ -60,7 +60,7 @@
     <a href="index.html" class="btn btn-outline-primary mb-3">← Volver al inicio</a>
     <div class="card">
       <div class="card-body">
-        <h1 id="tituloPartida" class="card-title text-center text-primary">Partida de MIL MILLAS</h1>
+        <h1 id="tituloPartida" class="card-title text-center text-primary">Partida actual de Mil Millas 🏎️</h1>
         <h5 id="subtituloPartida" class="text-center text-secondary"></h5>
         <div id="mensajeGanador" class="alert alert-success mt-4" style="display: none;">
           🎉 ¡Felicidades! El ganador es: <span id="nombreGanador"></span> 🏆🎊
@@ -171,7 +171,7 @@
         const response = await fetch(`/api/partidas/${partidaId}`);
         if (response.ok) {
           const partida = await response.json();
-          document.getElementById('tituloPartida').textContent = `Partida de MIL MILLAS`;
+          document.getElementById('tituloPartida').textContent = `Partida actual de Mil Millas 🏎️`;
 
           // Actualizar subtítulo con nombres de equipos o jugadores
           const subtitulo = document.getElementById('subtituloPartida');
