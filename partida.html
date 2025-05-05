@@ -74,7 +74,8 @@
     const urlParams = new URLSearchParams(window.location.search);
     const partidaId = urlParams.get('id');
 
-    if (!partidaId) {
+    if (!partidaId || partidaId === 'null') { // Check for null or missing ID
+      console.error('No se encontró el ID de la partida en la URL.');
       alert('No se encontró el ID de la partida. Redirigiendo al inicio.');
       window.location.href = 'index.html';
     }
@@ -99,6 +100,29 @@
             li.textContent = jugador;
             listaJugadores.appendChild(li);
           });
+
+          // Generar campos dinámicos para el formulario
+          const formJugadores = document.getElementById('formJugadores');
+          formJugadores.innerHTML = ''; // Limpiar contenido previo
+          partida.participantes.forEach(jugador => {
+            const div = document.createElement('div');
+            div.className = 'mb-3';
+            div.innerHTML = `
+              <h5>${jugador}</h5>
+              <label>Recorrido (0 a 1000): <input type="number" class="form-control" name="${jugador}_recorrido" min="0" max="1000" required></label>
+              <label>Viaje completo (1000 millas): <input type="checkbox" class="form-check-input" name="${jugador}_viajeCompleto"></label>
+              <label>TK (bota justo al frenar): <input type="checkbox" class="form-check-input" name="${jugador}_tk"></label>
+              <label>Seguridades (cantidad de botas): <input type="number" class="form-control" name="${jugador}_seguridades" min="0" max="4"></label>
+              <label>Las 4 seguridades (bonus): <input type="checkbox" class="form-check-input" name="${jugador}_bonus4seguridades"></label>
+              <label>Viaje seguro (sin 200): <input type="checkbox" class="form-check-input" name="${jugador}_viajeSeguro"></label>
+              <label>Bloqueo (shutout): <input type="checkbox" class="form-check-input" name="${jugador}_bloqueo"></label>
+              <label>Acción demorada (sin usar millas hasta mitad de juego): <input type="checkbox" class="form-check-input" name="${jugador}_accionDemorada"></label>
+              <label>Alargue (terminar en el alargue): <input type="checkbox" class="form-check-input" name="${jugador}_alargue"></label>
+              <hr>
+            `;
+            formJugadores.appendChild(div);
+          });
+
           return partida;
         } else {
           throw new Error(`Error ${response.status}: ${response.statusText}`);
