@@ -90,7 +90,11 @@
         if (response.ok) {
           const partida = await response.json();
           document.getElementById('tituloPartida').textContent = `Partida de MIL MILLAS`;
-          document.getElementById('subtituloPartida').textContent = `${partida.nombre} - ${partida.modo}`;
+
+          // Actualizar subtítulo con nombres de equipos o jugadores
+          const subtitulo = document.getElementById('subtituloPartida');
+          subtitulo.textContent = partida.participantes.join(' vs ');
+
           // Render jugadores
           const listaJugadores = document.getElementById('listaJugadores');
           listaJugadores.innerHTML = '';
@@ -106,22 +110,53 @@
           formJugadores.innerHTML = ''; // Limpiar contenido previo
           partida.participantes.forEach(jugador => {
             const div = document.createElement('div');
-            div.className = 'mb-3';
+            div.className = 'card mb-3';
             div.innerHTML = `
-              <h5>${jugador}</h5>
-              <label>Recorrido (0 a 1000): <input type="number" class="form-control" name="${jugador}_recorrido" min="0" max="1000" required></label>
-              <label>Viaje completo (1000 millas): <input type="checkbox" class="form-check-input" name="${jugador}_viajeCompleto"></label>
-              <label>TK (bota justo al frenar): <input type="checkbox" class="form-check-input" name="${jugador}_tk"></label>
-              <label>Seguridades (cantidad de botas): <input type="number" class="form-control" name="${jugador}_seguridades" min="0" max="4"></label>
-              <label>Las 4 seguridades (bonus): <input type="checkbox" class="form-check-input" name="${jugador}_bonus4seguridades"></label>
-              <label>Viaje seguro (sin 200): <input type="checkbox" class="form-check-input" name="${jugador}_viajeSeguro"></label>
-              <label>Bloqueo (shutout): <input type="checkbox" class="form-check-input" name="${jugador}_bloqueo"></label>
-              <label>Acción demorada (sin usar millas hasta mitad de juego): <input type="checkbox" class="form-check-input" name="${jugador}_accionDemorada"></label>
-              <label>Alargue (terminar en el alargue): <input type="checkbox" class="form-check-input" name="${jugador}_alargue"></label>
-              <hr>
+              <h5 class="card-header">${jugador}</h5>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label for="${jugador}_recorrido" class="form-label">Recorrido (0 a 1000)</label>
+                  <input type="number" class="form-control" id="${jugador}_recorrido" name="${jugador}_recorrido" min="0" max="1000" required>
+                </div>
+                <div class="form-check mb-3">
+                  <input type="checkbox" class="form-check-input" id="${jugador}_viajeCompleto" name="${jugador}_viajeCompleto">
+                  <label class="form-check-label" for="${jugador}_viajeCompleto">Viaje completo (1000 millas)</label>
+                </div>
+                <div class="form-check mb-3">
+                  <input type="checkbox" class="form-check-input" id="${jugador}_tk" name="${jugador}_tk">
+                  <label class="form-check-label" for="${jugador}_tk">TK (bota justo al frenar)</label>
+                </div>
+                <div class="mb-3">
+                  <label for="${jugador}_seguridades" class="form-label">Seguridades (cantidad de botas)</label>
+                  <input type="number" class="form-control" id="${jugador}_seguridades" name="${jugador}_seguridades" min="0" max="4">
+                </div>
+                <div class="form-check mb-3">
+                  <input type="checkbox" class="form-check-input" id="${jugador}_bonus4seguridades" name="${jugador}_bonus4seguridades">
+                  <label class="form-check-label" for="${jugador}_bonus4seguridades">Las 4 seguridades (bonus)</label>
+                </div>
+                <div class="form-check mb-3">
+                  <input type="checkbox" class="form-check-input" id="${jugador}_viajeSeguro" name="${jugador}_viajeSeguro">
+                  <label class="form-check-label" for="${jugador}_viajeSeguro">Viaje seguro (sin 200)</label>
+                </div>
+                <div class="form-check mb-3">
+                  <input type="checkbox" class="form-check-input" id="${jugador}_bloqueo" name="${jugador}_bloqueo">
+                  <label class="form-check-label" for="${jugador}_bloqueo">Bloqueo (shutout)</label>
+                </div>
+                <div class="form-check mb-3">
+                  <input type="checkbox" class="form-check-input" id="${jugador}_accionDemorada" name="${jugador}_accionDemorada">
+                  <label class="form-check-label" for="${jugador}_accionDemorada">Acción demorada</label>
+                </div>
+                <div class="form-check mb-3">
+                  <input type="checkbox" class="form-check-input" id="${jugador}_alargue" name="${jugador}_alargue">
+                  <label class="form-check-label" for="${jugador}_alargue">Alargue</label>
+                </div>
+              </div>
             `;
             formJugadores.appendChild(div);
           });
+
+          // Mostrar resumen de puntos acumulados
+          mostrarResumen(partida);
 
           return partida;
         } else {
@@ -132,6 +167,52 @@
         alert('No se pudo cargar la partida. Verifica el servidor.');
         return null;
       }
+    }
+
+    function mostrarResumen(partida) {
+      const resumenDiv = document.getElementById('tablaResumen');
+      const totales = {};
+
+      // Inicializar totales
+      partida.participantes.forEach(participante => {
+        totales[participante] = [];
+      });
+
+      // Calcular puntos por ronda
+      partida.manos.forEach((mano, index) => {
+        partida.participantes.forEach(participante => {
+          const puntos = (mano[`${participante}_recorrido`] || 0) +
+            (mano[`${participante}_viajeCompleto`] ? 400 : 0) +
+            (mano[`${participante}_tk`] ? 300 : 0) +
+            ((mano[`${participante}_seguridades`] || 0) * 100) +
+            (mano[`${participante}_bonus4seguridades`] ? 300 : 0) +
+            (mano[`${participante}_viajeSeguro`] ? 300 : 0) +
+            (mano[`${participante}_bloqueo`] ? 500 : 0) +
+            (mano[`${participante}_accionDemorada`] ? 300 : 0) +
+            (mano[`${participante}_alargue`] ? 200 : 0);
+
+          totales[participante].push(puntos);
+        });
+      });
+
+      // Generar tabla resumen
+      let html = '<table class="table table-bordered"><thead><tr>';
+      partida.participantes.forEach(participante => {
+        html += `<th>${participante}</th>`;
+      });
+      html += '</tr></thead><tbody>';
+
+      const maxRondas = Math.max(...Object.values(totales).map(arr => arr.length));
+      for (let i = 0; i < maxRondas; i++) {
+        html += '<tr>';
+        partida.participantes.forEach(participante => {
+          html += `<td>${totales[participante][i] || 0}</td>`;
+        });
+        html += '</tr>';
+      }
+
+      html += '</tbody></table>';
+      resumenDiv.innerHTML = html;
     }
 
     async function guardarPartida(partida) {
