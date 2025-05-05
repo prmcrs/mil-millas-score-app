@@ -6,7 +6,14 @@ const app = express();
 const PORT = process.env.PORT || 3000; 
 const DATA_FILE = path.join(__dirname, 'partidas', 'partidas.json');
 
+// Middleware para servir archivos estáticos
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
+
+// Ruta para servir el archivo principal
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // Obtener todas las partidas
 app.get('/api/partidas', (req, res) => {
