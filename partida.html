@@ -294,9 +294,22 @@
       try {
         const formData = new FormData(event.target);
         const nuevaMano = {};
+        const participantesInvalidos = [];
+
         formData.forEach((value, key) => {
+          if (key.endsWith('_recorrido')) {
+            const recorrido = Number(value);
+            if (recorrido % 25 !== 0) {
+              participantesInvalidos.push(key.split('_')[0]); // Extraer el nombre del participante
+            }
+          }
           nuevaMano[key] = isNaN(value) ? value : Number(value);
         });
+
+        if (participantesInvalidos.length > 0) {
+          alert(`Error: Los puntajes de recorrido para los siguientes participantes no son válidos (deben ser múltiplos de 25): ${participantesInvalidos.join(', ')}`);
+          return;
+        }
 
         const partida = await obtenerPartida();
         partida.manos.push(nuevaMano);
