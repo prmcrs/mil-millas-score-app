@@ -23,8 +23,39 @@
     <p>Made by AI with PABLO</p>
   </footer>
 
-  <script src="app.js"></script>
   <script>
+    const PASSWORD = "carlonga4ever";
+
+    function setCookie(name, value, hours) {
+      const date = new Date();
+      date.setTime(date.getTime() + (hours * 60 * 60 * 1000));
+      document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
+    }
+
+    function getCookie(name) {
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        const [key, value] = cookie.trim().split('=');
+        if (key === name) return value;
+      }
+      return null;
+    }
+
+    function checkLogin() {
+      const storedPassword = getCookie('authPassword');
+      if (storedPassword !== PASSWORD) {
+        const userPassword = prompt("Por favor, ingresa la contraseña:");
+        if (userPassword !== PASSWORD) {
+          alert("Contraseña incorrecta. No puedes acceder.");
+          window.location.href = "https://www.google.com"; // Redirect to a safe page
+        } else {
+          setCookie('authPassword', PASSWORD, 12); // Store password for 12 hours
+        }
+      }
+    }
+
+    checkLogin();
+
     const mensajeFinalizada = document.getElementById('mensajeFinalizada');
     const formPartida = document.getElementById('formMano');
     if (partida.finalizada) {
