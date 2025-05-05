@@ -254,16 +254,11 @@
           partidas
             .filter(partida => !partida.finalizada)
             .forEach(partida => {
-              const div = document.createElement('div');
-              div.className = 'card mb-2';
-              div.innerHTML = `
-                <div class="card-body">
-                  <a href="partida.html?id=${partida.id}" class="text-decoration-none text-primary fw-bold">
-                    ${partida.nombre} (${partida.participantes.join(' vs ')})
-                  </a>
-                </div>
-              `;
-              partidasActivas.appendChild(div);
+              const a = document.createElement('a');
+              a.href = `partida.html?id=${partida.id}`;
+              a.className = 'text-decoration-none text-primary fw-bold d-block mb-2';
+              a.textContent = `${partida.nombre} (${partida.participantes.join(' vs ')})`;
+              partidasActivas.appendChild(a);
             });
         } else {
           throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -283,16 +278,11 @@
           partidas
             .filter(partida => partida.finalizada)
             .forEach(partida => {
-              const div = document.createElement('div');
-              div.className = 'card mb-2';
-              div.innerHTML = `
-                <div class="card-body">
-                  <a href="partida.html?id=${partida.id}" class="text-decoration-none text-secondary fw-bold">
-                    ${partida.nombre} (${partida.participantes.join(' vs ')})
-                  </a>
-                </div>
-              `;
-              partidasFinalizadas.appendChild(div);
+              const a = document.createElement('a');
+              a.href = `partida.html?id=${partida.id}`;
+              a.className = 'text-decoration-none text-secondary fw-bold d-block mb-2';
+              a.textContent = `${partida.nombre} (${partida.participantes.join(' vs ')})`;
+              partidasFinalizadas.appendChild(a);
             });
         } else {
           throw new Error(`Error ${response.status}: ${response.statusText}`);

@@ -45,7 +45,7 @@
         <div id="mensajeFinalizada" class="alert alert-danger mt-4" style="display: none;">
           Esta partida está finalizada. No se pueden agregar más manos.
         </div>
-        <div class="card mt-4">
+        <div id="agregarManoCard" class="card mt-4">
           <h5 class="card-header">Agregar Mano</h5>
           <div class="card-body">
             <form id="formMano">
@@ -295,7 +295,7 @@
       }
       if (partida.finalizada) {
         mensajeFinalizada.style.display = 'block';
-        formPartida.style.display = 'none';
+        document.getElementById('agregarManoCard').style.display = 'none'; // Hide the "Agregar Mano" card
       }
     });
   </script>
