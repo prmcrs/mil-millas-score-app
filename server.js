@@ -10,6 +10,12 @@ const DATA_FILE = path.join(__dirname, 'partidas', 'partidas.json');
 app.use(express.static(path.join(__dirname)));
 app.use(express.json());
 
+// Verificar si el archivo JSON existe, si no, crearlo vacío
+if (!fs.existsSync(DATA_FILE)) {
+  fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true }); // Crear carpeta si no existe
+  fs.writeFileSync(DATA_FILE, '[]', 'utf8'); // Crear archivo vacío
+}
+
 // Ruta para servir el archivo principal
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
