@@ -60,6 +60,9 @@
       <div class="card-body">
         <h1 id="tituloPartida" class="card-title text-center text-primary">Partida de MIL MILLAS</h1>
         <h5 id="subtituloPartida" class="text-center text-secondary"></h5>
+        <div id="mensajeGanador" class="alert alert-success mt-4" style="display: none;">
+          🎉 ¡Felicidades! El ganador es: <span id="nombreGanador"></span> 🏆🎊
+        </div>
         <div id="tablaResumen" class="mt-4"></div>
         <div id="mensajeFinalizada" class="alert alert-danger mt-4" style="display: none;">
           Esta partida está finalizada. No se pueden agregar más manos.
@@ -294,10 +297,39 @@
         formData.forEach((value, key) => {
           nuevaMano[key] = isNaN(value) ? value : Number(value);
         });
+
         const partida = await obtenerPartida();
         partida.manos.push(nuevaMano);
+
+        // Recalculate scores and check for a winner
+        const totales = {};
+        partida.participantes.forEach(participante => {
+          totales[participante] = 0;
+        });
+
+        partida.manos.forEach(mano => {
+          partida.participantes.forEach(participante => {
+            totales[participante] += mano[`${participante}_puntos`] || 0;
+          });
+        });
+
+        let ganador = null;
+        for (const [participante, puntos] of Object.entries(totales)) {
+          if (puntos >= 5000) {
+            ganador = participante;
+            partida.finalizada = true;
+            break;
+          }
+        }
+
+        if (ganador) {
+          partida.ganador = ganador;
+          alert(`🎉 ¡Felicidades! El ganador es: ${ganador} 🏆`);
+        }
+
         await guardarPartida(partida);
         alert('Mano agregada exitosamente.');
+        location.reload();
       } catch (error) {
         console.error('Error al agregar la mano:', error);
         alert('No se pudo agregar la mano. Verifica el servidor.');
@@ -312,9 +344,18 @@
         formPartida.style.display = 'none';
         return;
       }
+
       if (partida.finalizada) {
         mensajeFinalizada.style.display = 'block';
-        document.getElementById('agregarManoCard').style.display = 'none'; // Hide the "Agregar Mano" card
+        document.getElementById('agregarManoCard').style.display = 'none';
+
+        // Display winner message
+        if (partida.ganador) {
+          const mensajeGanador = document.getElementById('mensajeGanador');
+          const nombreGanador = document.getElementById('nombreGanador');
+          nombreGanador.textContent = partida.ganador;
+          mensajeGanador.style.display = 'block';
+        }
       }
     });
   </script>
