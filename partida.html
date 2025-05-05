@@ -58,10 +58,20 @@
 
     const mensajeFinalizada = document.getElementById('mensajeFinalizada');
     const formPartida = document.getElementById('formMano');
-    if (partida.finalizada) {
-      mensajeFinalizada.style.display = 'block';
-      formPartida.style.display = 'none';
-    }
+    const resumenDiv = document.getElementById('tablaResumen');
+
+    obtenerPartida().then(partida => {
+      if (!partida) {
+        resumenDiv.innerHTML = "<p>No se pudo cargar la partida. Verifica el servidor.</p>";
+        formPartida.style.display = 'none'; // Ocultamos el formulario si no hay partida
+        return;
+      }
+
+      if (partida.finalizada) {
+        mensajeFinalizada.style.display = 'block';
+        formPartida.style.display = 'none';
+      }
+    });
   </script>
 </body>
 </html>

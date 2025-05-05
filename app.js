@@ -103,10 +103,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (formPartida && formContainer && resumenDiv && partidaId) {
     async function obtenerPartida() {
       try {
-        const response = await fetch(`/api/partidas`);
+        const response = await fetch(`/api/partidas/${partidaId}`);
         if (response.ok) {
-          const partidas = await response.json();
-          return partidas.find(p => p.id == partidaId);
+          return await response.json();
         } else {
           throw new Error('Error al obtener la partida del servidor');
         }
