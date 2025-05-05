@@ -1,77 +1,41 @@
 [
   {
-    "id": "partida-1746414625035",
-    "nombre": "ABC",
+    "id": "partida-1746419758628",
+    "nombre": "JUEGO EJEMPLO",
     "modo": "equipos",
-    "participantes": ["A1", "B1"],
-    "manos": [
-      {
-        "a1_recorrido": 1000,
-        "a1_viajeCompleto": true,
-        "a1_tk": true,
-        "a1_seguridades": 3,
-        "a1_bonus4seguridades": false,
-        "a1_viajeSeguro": true,
-        "a1_bloqueo": false,
-        "a1_accionDemorada": false,
-        "a1_alargue": false,
-        "a1_puntos": 2500,
-        "b1_recorrido": 800,
-        "b1_viajeCompleto": false,
-        "b1_tk": false,
-        "b1_seguridades": 2,
-        "b1_bonus4seguridades": false,
-        "b1_viajeSeguro": false,
-        "b1_bloqueo": false,
-        "b1_accionDemorada": false,
-        "b1_alargue": false,
-        "b1_puntos": 1000
-      },
-      {
-        "a1_recorrido": 900,
-        "a1_viajeCompleto": false,
-        "a1_tk": false,
-        "a1_seguridades": 2,
-        "a1_bonus4seguridades": false,
-        "a1_viajeSeguro": false,
-        "a1_bloqueo": false,
-        "a1_accionDemorada": false,
-        "a1_alargue": false,
-        "a1_puntos": 1100,
-        "b1_recorrido": 1000,
-        "b1_viajeCompleto": true,
-        "b1_tk": true,
-        "b1_seguridades": 4,
-        "b1_bonus4seguridades": true,
-        "b1_viajeSeguro": true,
-        "b1_bloqueo": false,
-        "b1_accionDemorada": false,
-        "b1_alargue": false,
-        "b1_puntos": 3300
-      },
-      {
-        "a1_recorrido": 1000,
-        "a1_viajeCompleto": true,
-        "a1_tk": true,
-        "a1_seguridades": 4,
-        "a1_bonus4seguridades": true,
-        "a1_viajeSeguro": true,
-        "a1_bloqueo": false,
-        "a1_accionDemorada": false,
-        "a1_alargue": false,
-        "a1_puntos": 3300,
-        "b1_recorrido": 900,
-        "b1_viajeCompleto": false,
-        "b1_tk": false,
-        "b1_seguridades": 3,
-        "b1_bonus4seguridades": false,
-        "b1_viajeSeguro": false,
-        "b1_bloqueo": false,
-        "b1_accionDemorada": false,
-        "b1_alargue": false,
-        "b1_puntos": 1200
-      }
+    "participantes": [
+      "EQ1",
+      "EQ2"
     ],
-    "finalizada": true
-  }
+    "manos": [
+    {
+      "EQ1_recorrido": 1000,
+      "EQ1_seguridades": 4,
+      "EQ1_viajeCompleto": "on",
+      "EQ1_tk": "on",
+      "EQ1_bonus4seguridades": "on",
+      "EQ1_viajeSeguro": "on",
+      "EQ2_recorrido": 925,
+      "EQ2_seguridades": 0
+    },
+    {
+      "EQ1_recorrido": 1000,
+      "EQ1_seguridades": 2,
+      "EQ1_viajeSeguro": "on",
+      "EQ2_recorrido": 950,
+      "EQ2_seguridades": 2
+    },
+    {
+      "EQ1_recorrido": 1000,
+      "EQ1_seguridades": 4,
+      "EQ1_viajeCompleto": "on",
+      "EQ1_tk": "on",
+      "EQ1_bonus4seguridades": "on",
+      "EQ1_viajeSeguro": "on",
+      "EQ2_recorrido": 100,
+      "EQ2_seguridades": 0
+    }
+  ],
+  "finalizada": false
+}
 ]
