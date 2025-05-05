@@ -1,12 +1,13 @@
 /* style.css */
 body {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Open Sans', sans-serif;
   background: #f4f4f4;
   color: #333;
 }
 
 h1, h2 {
-  color: #333;
+  color: #ff9800; /* Orange color */
+  font-weight: bold;
   text-align: center;
 }
 
@@ -34,17 +35,18 @@ input[type="checkbox"] {
 
 button {
   padding: 0.8rem;
-  background: #0078d4;
+  background: #ff9800; /* Orange color */
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   width: 100%;
   font-size: 1rem;
+  font-weight: bold;
 }
 
 button:hover {
-  background: #005fa3;
+  background: #e65100; /* Darker orange */
 }
 
 #tablaResumen {
