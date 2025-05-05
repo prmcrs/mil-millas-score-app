@@ -14,6 +14,7 @@
     <div class="card">
       <div class="card-body">
         <h1 id="tituloPartida" class="card-title text-center text-primary">Partida de MIL MILLAS</h1>
+        <h5 id="subtituloPartida" class="text-center text-secondary"></h5>
         <ul id="listaJugadores" class="list-group list-group-flush"></ul>
         <div id="tablaResumen" class="mt-4"></div>
         <div id="mensajeFinalizada" class="alert alert-danger mt-4" style="display: none;">
@@ -23,7 +24,9 @@
           <h5 class="card-header">Agregar Mano</h5>
           <div class="card-body">
             <form id="formMano">
-              <div id="formJugadores" class="mb-3"></div>
+              <div id="formJugadores" class="mb-3">
+                <!-- Campos dinámicos para cada jugador -->
+              </div>
               <button type="submit" class="btn btn-primary w-100">Agregar Mano</button>
             </form>
           </div>
@@ -84,12 +87,24 @@
       try {
         const response = await fetch(`/api/partidas/${partidaId}`);
         if (response.ok) {
-          return await response.json();
+          const partida = await response.json();
+          document.getElementById('tituloPartida').textContent = `Partida de MIL MILLAS`;
+          document.getElementById('subtituloPartida').textContent = `${partida.nombre} - ${partida.modo}`;
+          // Render jugadores
+          const listaJugadores = document.getElementById('listaJugadores');
+          listaJugadores.innerHTML = '';
+          partida.participantes.forEach(jugador => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item';
+            li.textContent = jugador;
+            listaJugadores.appendChild(li);
+          });
+          return partida;
         } else {
-          throw new Error('Error al obtener la partida del servidor');
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
         }
       } catch (error) {
-        console.error(error);
+        console.error('Error al obtener la partida:', error);
         alert('No se pudo cargar la partida. Verifica el servidor.');
         return null;
       }
@@ -111,13 +126,32 @@
       }
     }
 
+    async function agregarMano(event) {
+      event.preventDefault();
+      try {
+        const formData = new FormData(event.target);
+        const nuevaMano = {};
+        formData.forEach((value, key) => {
+          nuevaMano[key] = isNaN(value) ? value : Number(value);
+        });
+        const partida = await obtenerPartida();
+        partida.manos.push(nuevaMano);
+        await guardarPartida(partida);
+        alert('Mano agregada exitosamente.');
+      } catch (error) {
+        console.error('Error al agregar la mano:', error);
+        alert('No se pudo agregar la mano. Verifica el servidor.');
+      }
+    }
+
+    document.getElementById('formMano').addEventListener('submit', agregarMano);
+
     obtenerPartida().then(partida => {
       if (!partida) {
         resumenDiv.innerHTML = "<p class='text-danger'>No se pudo cargar la partida. Verifica el servidor.</p>";
         formPartida.style.display = 'none';
         return;
       }
-
       if (partida.finalizada) {
         mensajeFinalizada.style.display = 'block';
         formPartida.style.display = 'none';

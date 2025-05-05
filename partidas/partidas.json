@@ -1,1 +1,23 @@
-[]
+[
+  {
+    "id": "partida-1746414625035",
+    "nombre": "ABC",
+    "modo": "equipos",
+    "participantes": ["A1", "B1"],
+    "manos": [
+      {
+        "jugador": "A1",
+        "millas_jugadas": 1000,
+        "cerró": true,
+        "viaje_completo": true,
+        "uso_todas_las_millas": true,
+        "todas_seguridad": false,
+        "cantidad_seguridad": 3,
+        "coup_fourré": 1,
+        "jugó_sin_ataques": false,
+        "ganó_mano": true
+      }
+    ],
+    "finalizada": false
+  }
+]
