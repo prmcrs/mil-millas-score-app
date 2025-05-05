@@ -226,10 +226,11 @@
               partidasActivas.appendChild(li);
             });
         } else {
+          console.error(`Error al obtener las partidas activas: ${response.status} ${response.statusText}`);
           throw new Error('Error al obtener las partidas activas');
         }
       } catch (error) {
-        console.error(error);
+        console.error('Detalles del error al cargar partidas activas:', error);
         alert('No se pudieron cargar las partidas activas.');
       }
     }
@@ -249,10 +250,11 @@
               partidasFinalizadas.appendChild(li);
             });
         } else {
+          console.error(`Error al obtener las partidas finalizadas: ${response.status} ${response.statusText}`);
           throw new Error('Error al obtener las partidas finalizadas');
         }
       } catch (error) {
-        console.error(error);
+        console.error('Detalles del error al cargar partidas finalizadas:', error);
         alert('No se pudieron cargar las partidas finalizadas.');
       }
     }
