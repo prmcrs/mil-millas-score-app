@@ -3,337 +3,79 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🏁 Puntuaciones Mil Millas 🚗</title>
+  <title>Mil Millas Score</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-  <style>
-    body {
-      font-family: 'Open Sans', sans-serif;
-      background: url('images/background-texture.jpg') no-repeat center center fixed;
-      background-size: cover;
-      color: #333;
-    }
-
-    h1, h2, h3 {
-      text-align: center;
-      color: #ff9800; /* Orange color */
-      font-weight: bold;
-    }
-
-    h1, h5 {
-      color: #ff9800; /* Orange color */
-      font-weight: bold;
-    }
-
-    .btn-success {
-      background-color: #ff9800; /* Orange color */
-      border-color: #ff9800;
-      font-weight: bold;
-    }
-
-    .btn-success:hover {
-      background-color: #e65100; /* Darker orange */
-      border-color: #e65100;
-    }
-
-    .card {
-      border: 2px solid #ff9800; /* Orange border */
-    }
-  </style>
+  <script defer src="app.js"></script>
 </head>
-<body>
-  <div class="container mt-4">
-    <div class="card text-center mb-4">
-      <div class="card-body">
-        <h1 class="card-title text-primary fw-bold">🏁 Puntuaciones Mil Millas 🚗</h1>
-      </div>
-    </div>
-    <!-- Tarjeta de Bienvenida -->
-    <div class="card mb-4">
-      <div class="row g-0 align-items-center">
-        <div class="col-md-8">
-          <div class="card-body">
-            <h5 class="card-title text-primary">¡Bienvenido a MIL MILLAS! 🎉</h5>
-            <p class="card-text">
-              <span id="resumenPartidasActivas">Cargando partidas activas...</span><br>
-              <span id="resumenPartidasFinalizadas">Cargando partidas finalizadas...</span>
-            </p>
-          </div>
-        </div>
-        <div class="col-md-4 text-center">
-          <img src="images/man-with-laptop.png" class="img-fluid rounded-start" alt="Man with Laptop">
+<body data-page="index">
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="brand-block">
+        <span class="brand-mark">🏁</span>
+        <div>
+          <p class="eyebrow">Juego de mesa</p>
+          <h1>Mil Millas</h1>
         </div>
       </div>
-    </div>
+    </header>
 
-    <!-- Tarjetas de Partidas Activas y Finalizadas -->
-    <div class="row g-4">
-      <div class="col-md-6">
-        <div class="card h-100">
-          <div class="card-body">
-            <h5 class="card-title">Partidas activas</h5>
-            <ul id="partidasActivas" class="list-group list-group-flush">
-              <!-- Las partidas activas se cargarán dinámicamente aquí -->
-            </ul>
-          </div>
+    <main class="container">
+      <section class="hero card">
+        <div class="hero-copy">
+          <p class="eyebrow accent">Panel principal</p>
+          <h2>Gestión de partidas</h2>
+          <p id="resumenPartidasActivas">Cargando partidas activas...</p>
+          <p id="resumenPartidasFinalizadas">Cargando partidas finalizadas...</p>
         </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card h-100">
-          <div class="card-body">
-            <h5 class="card-title">Partidas finalizadas</h5>
-            <ul id="partidasFinalizadas" class="list-group list-group-flush">
-              <!-- Las partidas finalizadas se cargarán dinámicamente aquí -->
-            </ul>
-          </div>
+        <div class="hero-illustration">
+          <img src="images/man-with-laptop.png" alt="Panel de control de Mil Millas" />
         </div>
-      </div>
-    </div>
-  </div>
+      </section>
 
-  <div id="crearPartidaContainer" class="container mt-4">
-    <button id="toggleFormButton" class="btn btn-success mb-3">Crear nueva partida</button>
-    <div id="formNuevaPartida" class="card" style="display: none;">
-      <h5 class="card-header">Nueva Partida</h5>
-      <div class="card-body">
-        <form>
-          <div class="mb-3">
-            <label for="nombrePartida" class="form-label">Nombre de la partida</label>
-            <input type="text" class="form-control" id="nombrePartida" placeholder="Ingrese el nombre de la partida" required>
+      <section class="dashboard-grid">
+        <article class="card list-panel">
+          <div class="panel-header">
+            <h3>Partidas activas</h3>
           </div>
-          <div class="mb-3">
-            <label for="modoJuego" class="form-label">Modo de juego</label>
-            <select class="form-select" id="modoJuego" required>
+          <ul id="partidasActivas" class="list-panel-items"></ul>
+        </article>
+
+        <article class="card list-panel">
+          <div class="panel-header">
+            <h3>Partidas finalizadas</h3>
+          </div>
+          <ul id="partidasFinalizadas" class="list-panel-items"></ul>
+        </article>
+      </section>
+
+      <section class="card form-panel">
+        <div class="panel-header">
+          <h3>Nueva partida</h3>
+        </div>
+
+        <form id="formNuevaPartida" class="modern-form">
+          <label class="field">
+            <span>Nombre de la partida</span>
+            <input id="nombrePartida" type="text" placeholder="Ej: Viernes de mil millas" required>
+          </label>
+
+          <label class="field">
+            <span>Modo de juego</span>
+            <select id="modoJuego">
               <option value="individual">Individual</option>
               <option value="equipos">Equipos</option>
             </select>
-          </div>
-          <div id="opcionesIndividual" class="mb-3" style="display: none;">
-            <label for="cantidadJugadores" class="form-label">Cantidad de jugadores</label>
-            <select class="form-select" id="cantidadJugadores">
-              <option value="2">2</option>
-              <option value="3">3</option>
-            </select>
-          </div>
-          <div id="camposJugadores" class="mb-3"></div>
-          <button type="submit" class="btn btn-primary w-100">Crear partida</button>
+          </label>
+
+          <div id="camposJugadores" class="participant-fields"></div>
+
+          <button type="submit" class="primary-button">Crear partida</button>
         </form>
-      </div>
-    </div>
+      </section>
+    </main>
   </div>
-
-  <footer>
-    <p style="text-align: center;">© 2023 PDG. Creado con ❤️ en Argentina 🇦🇷</p>
-  </footer>
-
-  <script>
-    const PASSWORD = "carlonga4ever";
-
-    function setCookie(name, value, hours) {
-      const date = new Date();
-      date.setTime(date.getTime() + (hours * 60 * 60 * 1000));
-      document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
-    }
-
-    function getCookie(name) {
-      const cookies = document.cookie.split(';');
-      for (let cookie of cookies) {
-        const [key, value] = cookie.trim().split('=');
-        if (key === name) return value;
-      }
-      return null;
-    }
-
-    function checkLogin() {
-      const storedPassword = getCookie('authPassword');
-      if (storedPassword !== PASSWORD) {
-        const userPassword = prompt("Por favor, ingresa la contraseña:");
-        if (userPassword !== PASSWORD) {
-          alert("Contraseña incorrecta. No puedes acceder.");
-          window.location.href = "https://www.google.com"; // Redirect to a safe page
-        } else {
-          setCookie('authPassword', PASSWORD, 12); // Store password for 12 hours
-        }
-      }
-    }
-
-    checkLogin();
-
-    const modoJuego = document.getElementById('modoJuego');
-    const cantidadJugadores = document.getElementById('cantidadJugadores');
-    const opcionesIndividual = document.getElementById('opcionesIndividual');
-    const camposJugadores = document.getElementById('camposJugadores');
-    const form = document.getElementById('formNuevaPartida');
-    const partidasActivas = document.getElementById('partidasActivas');
-    const partidasFinalizadas = document.getElementById('partidasFinalizadas');
-    const toggleFormButton = document.getElementById('toggleFormButton');
-    const formNuevaPartida = document.getElementById('formNuevaPartida');
-
-    let modoActual = 'individual';
-
-    function renderCampos() {
-      camposJugadores.innerHTML = '';
-
-      if (modoActual === 'individual') {
-        opcionesIndividual.style.display = 'block';
-        const cant = parseInt(cantidadJugadores.value);
-        for (let i = 1; i <= cant; i++) {
-          const input = document.createElement('input');
-          input.type = 'text';
-          input.placeholder = `Nombre jugador ${i}`;
-          input.required = true;
-          input.name = `jugador${i}`;
-          camposJugadores.appendChild(input);
-          camposJugadores.appendChild(document.createElement('br'));
-        }
-      } else {
-        opcionesIndividual.style.display = 'none';
-        for (let i = 1; i <= 2; i++) {
-          const input = document.createElement('input');
-          input.type = 'text';
-          input.placeholder = `Nombre equipo ${i}`;
-          input.required = true;
-          input.name = `equipo${i}`;
-          camposJugadores.appendChild(input);
-          camposJugadores.appendChild(document.createElement('br'));
-        }
-      }
-    }
-
-    modoJuego.addEventListener('change', () => {
-      modoActual = modoJuego.value;
-      renderCampos();
-    });
-
-    cantidadJugadores.addEventListener('change', renderCampos);
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const nombrePartida = document.getElementById('nombrePartida').value.trim();
-      const id = 'partida-' + Date.now();
-      const modo = modoJuego.value;
-      const participantes = [];
-
-      const inputs = camposJugadores.querySelectorAll('input');
-      inputs.forEach(input => {
-        participantes.push(input.value.trim());
-      });
-
-      const partida = {
-        id,
-        nombre: nombrePartida,
-        modo,
-        participantes,
-        manos: [],
-        finalizada: false
-      };
-
-      try {
-        const response = await fetch('/api/partidas', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(partida)
-        });
-
-        if (response.ok) {
-          window.location.href = `partida.html?id=${id}`;
-        } else {
-          throw new Error('Error al guardar la partida en el servidor');
-        }
-      } catch (error) {
-        console.error('Error al crear la partida:', error);
-        alert('No se pudo crear la partida. Verifica el servidor.');
-      }
-    });
-
-    async function cargarPartidasActivas() {
-      try {
-        const response = await fetch('/api/partidas');
-        if (response.ok) {
-          const partidas = await response.json();
-          partidasActivas.innerHTML = '';
-          partidas
-            .filter(partida => !partida.finalizada)
-            .forEach(partida => {
-              const a = document.createElement('a');
-              a.href = `partida.html?id=${partida.id}`;
-              a.className = 'text-decoration-none text-primary fw-bold d-block mb-2';
-              a.textContent = `${partida.nombre} (${partida.participantes.join(' vs ')})`;
-              partidasActivas.appendChild(a);
-            });
-        } else {
-          throw new Error(`Error ${response.status}: ${response.statusText}`);
-        }
-      } catch (error) {
-        console.error('Error al cargar partidas activas:', error);
-        alert('No se pudieron cargar las partidas activas.');
-      }
-    }
-
-    async function cargarPartidasFinalizadas() {
-      try {
-        const response = await fetch('/api/partidas');
-        if (response.ok) {
-          const partidas = await response.json();
-          partidasFinalizadas.innerHTML = '';
-          partidas
-            .filter(partida => partida.finalizada)
-            .forEach(partida => {
-              const a = document.createElement('a');
-              a.href = `partida.html?id=${partida.id}`;
-              a.className = 'text-decoration-none text-secondary fw-bold d-block mb-2';
-              a.textContent = `${partida.nombre} (${partida.participantes.join(' vs ')})`;
-              partidasFinalizadas.appendChild(a);
-            });
-        } else {
-          throw new Error(`Error ${response.status}: ${response.statusText}`);
-        }
-      } catch (error) {
-        console.error('Error al cargar partidas finalizadas:', error);
-        alert('No se pudieron cargar las partidas finalizadas.');
-      }
-    }
-
-    async function actualizarResumenPartidas() {
-      try {
-        const response = await fetch('/api/partidas');
-        if (response.ok) {
-          const partidas = await response.json();
-          const activas = partidas.filter(p => !p.finalizada).length;
-          const finalizadas = partidas.filter(p => p.finalizada).length;
-
-          document.getElementById('resumenPartidasActivas').textContent =
-            activas > 0 ? `Partidas activas: ${activas}` : 'No hay partidas activas.';
-          document.getElementById('resumenPartidasFinalizadas').textContent =
-            finalizadas > 0 ? `Partidas finalizadas: ${finalizadas}` : 'No hay partidas finalizadas.';
-        } else {
-          throw new Error('Error al obtener las partidas');
-        }
-      } catch (error) {
-        console.error(error);
-        alert('No se pudieron cargar las partidas.');
-      }
-    }
-
-    toggleFormButton.addEventListener('click', () => {
-      if (formNuevaPartida.style.display === 'none' || formNuevaPartida.style.display === '') {
-        formNuevaPartida.style.display = 'block';
-        toggleFormButton.textContent = 'Ocultar formulario';
-      } else {
-        formNuevaPartida.style.display = 'none';
-        toggleFormButton.textContent = 'Crear nueva partida';
-      }
-    });
-
-    // Al cargar
-    modoJuego.value = 'individual';
-    renderCampos();
-    cargarPartidasActivas();
-    cargarPartidasFinalizadas();
-    actualizarResumenPartidas();
-  </script>
 </body>
 </html>

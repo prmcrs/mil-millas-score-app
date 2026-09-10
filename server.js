@@ -3,23 +3,95 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 3000; 
+const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'partidas', 'partidas.json');
 
-// Middleware para servir archivos estáticos desde el root del sitio
 app.use(express.static(path.join(__dirname)));
 app.use(express.json());
 
-// Verificar si el archivo JSON existe, si no, crearlo vacío
 if (!fs.existsSync(DATA_FILE)) {
-  fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true }); // Crear carpeta si no existe
-  fs.writeFileSync(DATA_FILE, '[]', 'utf8'); // Crear archivo vacío
+  fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
+  fs.writeFileSync(DATA_FILE, '[]', 'utf8');
 }
 
-// Helper to read and write JSON with error handling
+function normalizeParticipantes(partida) {
+  if (!partida || typeof partida !== 'object') {
+    return null;
+  }
+
+  const participantes = Array.isArray(partida.participantes)
+    ? partida.participantes
+    : Array.isArray(partida.jugadores)
+      ? partida.jugadores
+      : [];
+
+  const partidaNormalizada = {
+    ...partida,
+    participantes,
+    manos: Array.isArray(partida.manos) ? partida.manos : [],
+    finalizada: Boolean(partida.finalizada),
+  };
+
+  delete partidaNormalizada.jugadores;
+
+  partidaNormalizada.manos = partidaNormalizada.manos.map((mano) => {
+    const manoNormalizada = { ...mano };
+
+    participantes.forEach((participante) => {
+      const recorridoKey = `${participante}_recorrido`;
+      const segurosKey = `${participante}_seguridades`;
+      const viajeCompletoKey = `${participante}_viajeCompleto`;
+      const tkKey = `${participante}_tk`;
+      const bonus4Key = `${participante}_bonus4seguridades`;
+      const viajeSeguroKey = `${participante}_viajeSeguro`;
+      const bloqueoKey = `${participante}_bloqueo`;
+      const accionDemoradaKey = `${participante}_accionDemorada`;
+      const alargueKey = `${participante}_alargue`;
+
+      const recorrido = Number(manoNormalizada[recorridoKey] ?? 0);
+      const seguridades = Number(manoNormalizada[segurosKey] ?? 0);
+      const viajeCompleto = Boolean(manoNormalizada[viajeCompletoKey]);
+      const tk = Boolean(manoNormalizada[tkKey]);
+      const bonus4 = Boolean(manoNormalizada[bonus4Key]);
+      const viajeSeguro = Boolean(manoNormalizada[viajeSeguroKey]);
+      const bloqueo = Boolean(manoNormalizada[bloqueoKey]);
+      const accionDemorada = Boolean(manoNormalizada[accionDemoradaKey]);
+      const alargue = Boolean(manoNormalizada[alargueKey]);
+
+      const puntos =
+        recorrido +
+        (viajeCompleto ? 400 : 0) +
+        (tk ? 300 : 0) +
+        seguridades * 100 +
+        (bonus4 ? 300 : 0) +
+        (viajeSeguro ? 300 : 0) +
+        (bloqueo ? 500 : 0) +
+        (accionDemorada ? 300 : 0) +
+        (alargue ? 200 : 0);
+
+      manoNormalizada[recorridoKey] = recorrido;
+      manoNormalizada[segurosKey] = seguridades;
+      manoNormalizada[viajeCompletoKey] = viajeCompleto;
+      manoNormalizada[tkKey] = tk;
+      manoNormalizada[bonus4Key] = bonus4;
+      manoNormalizada[viajeSeguroKey] = viajeSeguro;
+      manoNormalizada[bloqueoKey] = bloqueo;
+      manoNormalizada[accionDemoradaKey] = accionDemorada;
+      manoNormalizada[alargueKey] = alargue;
+      manoNormalizada[`${participante}_puntos`] = puntos;
+    });
+
+    return manoNormalizada;
+  });
+
+  return partidaNormalizada;
+}
+
 function readPartidas() {
   try {
-    return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+    const contenido = fs.readFileSync(DATA_FILE, 'utf8') || '[]';
+    const partidas = JSON.parse(contenido);
+    return Array.isArray(partidas) ? partidas.map(normalizeParticipantes).filter(Boolean) : [];
   } catch (error) {
     console.error('Error al leer el archivo de datos:', error.message);
     throw new Error('No se pudo leer el archivo de datos. Verifica los permisos o la existencia del archivo.');
@@ -28,49 +100,47 @@ function readPartidas() {
 
 function writePartidas(partidas) {
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(partidas, null, 2));
+    const datos = partidas.map(normalizeParticipantes).filter(Boolean);
+    fs.writeFileSync(DATA_FILE, JSON.stringify(datos, null, 2));
   } catch (error) {
     console.error('Error al escribir en el archivo de datos:', error.message);
     throw new Error('No se pudo guardar en el archivo de datos. Verifica los permisos.');
   }
 }
 
-// Ruta para servir el archivo principal
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Obtener todas las partidas
 app.get('/api/partidas', (req, res) => {
   try {
-    const partidas = readPartidas();
-    res.json(partidas);
+    res.json(readPartidas());
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Obtener una partida por ID
 app.get('/api/partidas/:id', (req, res) => {
   try {
     const partidas = readPartidas();
-    const partida = partidas.find(p => p.id == req.params.id);
+    const partida = partidas.find((p) => String(p.id) === String(req.params.id));
+
     if (!partida) {
       return res.status(404).json({ error: 'Partida no encontrada' });
     }
+
     res.json(partida);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Guardar una nueva partida
 app.post('/api/partidas', (req, res) => {
   try {
     const partidas = readPartidas();
-    const nuevaPartida = req.body;
+    const nuevaPartida = normalizeParticipantes(req.body);
 
-    if (!nuevaPartida.id || !nuevaPartida.nombre || !nuevaPartida.participantes) {
+    if (!nuevaPartida || !nuevaPartida.id || !nuevaPartida.nombre || !Array.isArray(nuevaPartida.participantes) || nuevaPartida.participantes.length === 0) {
       return res.status(400).json({ error: 'Datos de partida incompletos' });
     }
 
@@ -83,14 +153,13 @@ app.post('/api/partidas', (req, res) => {
   }
 });
 
-// Actualizar una partida existente
 app.put('/api/partidas/:id', (req, res) => {
   try {
     const partidas = readPartidas();
     const id = req.params.id;
-    const partidaActualizada = req.body;
+    const partidaActualizada = normalizeParticipantes(req.body);
 
-    const index = partidas.findIndex(p => p.id == id);
+    const index = partidas.findIndex((p) => String(p.id) === String(id));
     if (index === -1) {
       return res.status(404).json({ error: 'Partida no encontrada' });
     }

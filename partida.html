@@ -3,376 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Partida actual de Mil Millas 🏎️</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <title>Partida de Mil Millas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Open Sans', sans-serif;
-      background: url('images/background-texture.jpg') no-repeat center center fixed;
-      background-size: cover;
-      color: #333;
-    }
-    h1, h5 {
-      color: #ff9800; /* Orange color */
-      font-weight: bold;
-    }
-    .btn-primary {
-      background-color: #ff9800; /* Orange color */
-      border-color: #ff9800;
-      font-weight: bold;
-    }
-    .btn-primary:hover {
-      background-color: #e65100; /* Darker orange */
-      border-color: #e65100;
-    }
-    .card {
-      border: 2px solid #ff9800; /* Orange border */
-    }
-    .form-check-inline {
-      margin-right: 15px;
-    }
-    .form-group {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .form-group label {
-      margin-right: 10px;
-      flex: 1;
-    }
-    .form-group input {
-      flex: 2;
-    }
-    .form-check {
-      display: flex;
-      align-items: center;
-    }
-    .form-check label {
-      margin-left: 5px;
-    }
-  </style>
+  <script defer src="app.js"></script>
 </head>
-<body>
-  <div class="container mt-3">
-    <a href="index.html" class="btn btn-outline-primary mb-3">← Volver al inicio</a>
-    <div class="card">
-      <div class="card-body">
-        <h1 id="tituloPartida" class="card-title text-center text-primary">Partida actual de Mil Millas 🏎️</h1>
-        <h5 id="subtituloPartida" class="text-center text-secondary"></h5>
-        <div id="mensajeGanador" class="alert alert-success mt-4" style="display: none;">
-          🎉 ¡Felicidades! El ganador es: <span id="nombreGanador"></span> 🏆🎊
+<body data-page="partida">
+  <div class="page-shell">
+    <header class="topbar compact-topbar">
+      <a href="index.html" class="back-link">← Volver</a>
+    </header>
+
+    <main class="container">
+      <section class="card game-card">
+        <div class="panel-header compact-header">
+          <h1 id="tituloPartida">Partida actual</h1>
         </div>
-        <div id="tablaResumen" class="mt-4"></div>
-        <div id="mensajeFinalizada" class="alert alert-danger mt-4" style="display: none;">
+
+        <h2 id="subtituloPartida" class="subtitle"></h2>
+
+        <div id="mensajeGanador" class="status-banner success" style="display: none;">
+          🎉 ¡Felicidades! El ganador es: <span id="nombreGanador"></span> 🏆
+        </div>
+
+        <div id="tablaResumen" class="summary-box"></div>
+
+        <div id="mensajeFinalizada" class="status-banner warning" style="display: none;">
           Esta partida está finalizada. No se pueden agregar más manos.
         </div>
-        <div id="agregarManoCard" class="card mt-4">
-          <h5 class="card-header">Agregar Mano</h5>
-          <div class="card-body">
-            <form id="formMano">
-              <div id="formJugadores" class="mb-3">
-                partida.participantes.forEach(jugador => {
-                  const div = document.createElement('div');
-                  div.className = 'card mb-3';
-                  div.innerHTML = `
-                    <div class="card-body">
-                      <h5 class="card-title">${jugador}</h5>
-                      <div class="form-group mb-3">
-                        <label for="${jugador}_recorrido">Recorrido (0 a 1000)</label>
-                        <input type="number" class="form-control" id="${jugador}_recorrido" name="${jugador}_recorrido" min="0" max="1000" required>
-                      </div>
-                      <div class="form-group mb-3">
-                        <label for="${jugador}_seguridades">Seguridades (0 a 4)</label>
-                        <input type="number" class="form-control" id="${jugador}_seguridades" name="${jugador}_seguridades" min="0" max="4">
-                      </div>
-                      <div class="form-check mb-2">
-                        <input type="checkbox" class="form-check-input" id="${jugador}_viajeCompleto" name="${jugador}_viajeCompleto">
-                        <label class="form-check-label" for="${jugador}_viajeCompleto">Viaje completo</label>
-                      </div>
-                      <div class="form-check mb-2">
-                        <input type="checkbox" class="form-check-input" id="${jugador}_tk" name="${jugador}_tk">
-                        <label class="form-check-label" for="${jugador}_tk">TK</label>
-                      </div>
-                      <div class="form-check mb-2">
-                        <input type="checkbox" class="form-check-input" id="${jugador}_bonus4seguridades" name="${jugador}_bonus4seguridades">
-                        <label class="form-check-label" for="${jugador}_bonus4seguridades">4 seguridades</label>
-                      </div>
-                      <div class="form-check mb-2">
-                        <input type="checkbox" class="form-check-input" id="${jugador}_viajeSeguro" name="${jugador}_viajeSeguro">
-                        <label class="form-check-label" for="${jugador}_viajeSeguro">Viaje seguro</label>
-                      </div>
-                    </div>
-                  `;
-                  formJugadores.appendChild(div);
-                });
-              </div>
-              <button type="submit" class="btn btn-primary w-100">Agregar Mano</button>
-            </form>
+
+        <div id="agregarManoCard" class="card hand-card">
+          <div class="panel-header">
+            <h3>Agregar mano</h3>
           </div>
+
+          <form id="formMano" class="modern-form">
+            <div id="formJugadores" class="participant-grid"></div>
+            <button type="submit" class="primary-button">Guardar mano</button>
+          </form>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   </div>
-  <footer class="text-center mt-4">
-    <p>© 2023 PDG. Creado con ❤️ en Argentina 🇦🇷</p>
-  </footer>
-
-  <script>
-    const PASSWORD = "carlonga4ever";
-
-    function setCookie(name, value, hours) {
-      const date = new Date();
-      date.setTime(date.getTime() + (hours * 60 * 60 * 1000));
-      document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
-    }
-
-    function getCookie(name) {
-      const cookies = document.cookie.split(';');
-      for (let cookie of cookies) {
-        const [key, value] = cookie.trim().split('=');
-        if (key === name) return value;
-      }
-      return null;
-    }
-
-    function checkLogin() {
-      const storedPassword = getCookie('authPassword');
-      if (storedPassword !== PASSWORD) {
-        const userPassword = prompt("Por favor, ingresa la contraseña:");
-        if (userPassword !== PASSWORD) {
-          alert("Contraseña incorrecta. No puedes acceder.");
-          window.location.href = "https://www.google.com"; // Redirect to a safe page
-        } else {
-          setCookie('authPassword', PASSWORD, 12); // Store password for 12 hours
-        }
-      }
-    }
-
-    checkLogin();
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const partidaId = urlParams.get('id');
-
-    if (!partidaId || partidaId === 'null') { // Check for null or missing ID
-      console.error('No se encontró el ID de la partida en la URL.');
-      alert('No se encontró el ID de la partida. Redirigiendo al inicio.');
-      window.location.href = 'index.html';
-    }
-
-    const mensajeFinalizada = document.getElementById('mensajeFinalizada');
-    const formPartida = document.getElementById('formMano');
-    const resumenDiv = document.getElementById('tablaResumen');
-
-    async function obtenerPartida() {
-      try {
-        const response = await fetch(`/api/partidas/${partidaId}`);
-        if (response.ok) {
-          const partida = await response.json();
-          document.getElementById('tituloPartida').textContent = `Partida actual de Mil Millas 🏎️`;
-
-          // Actualizar subtítulo con nombres de equipos o jugadores
-          const subtitulo = document.getElementById('subtituloPartida');
-          subtitulo.textContent = partida.participantes.join(' vs ');
-
-          // Generar campos dinámicos para el formulario
-          const formJugadores = document.getElementById('formJugadores');
-          formJugadores.innerHTML = ''; // Limpiar contenido previo
-          partida.participantes.forEach(jugador => {
-            const div = document.createElement('div');
-            div.className = 'card mb-3';
-            div.innerHTML = `
-              <div class="card-body">
-                <h5 class="card-title">${jugador}</h5>
-                <div class="form-group mb-3">
-                  <label for="${jugador}_recorrido">Recorrido (0 a 1000)</label>
-                  <input type="number" class="form-control" id="${jugador}_recorrido" name="${jugador}_recorrido" min="0" max="1000" required>
-                </div>
-                <div class="form-group mb-3">
-                  <label for="${jugador}_seguridades">Seguridades (0 a 4)</label>
-                  <input type="number" class="form-control" id="${jugador}_seguridades" name="${jugador}_seguridades" min="0" max="4">
-                </div>
-                <div class="form-check mb-2">
-                  <input type="checkbox" class="form-check-input" id="${jugador}_viajeCompleto" name="${jugador}_viajeCompleto">
-                  <label class="form-check-label" for="${jugador}_viajeCompleto">Viaje completo</label>
-                </div>
-                <div class="form-check mb-2">
-                  <input type="checkbox" class="form-check-input" id="${jugador}_tk" name="${jugador}_tk">
-                  <label class="form-check-label" for="${jugador}_tk">TK</label>
-                </div>
-                <div class="form-check mb-2">
-                  <input type="checkbox" class="form-check-input" id="${jugador}_bonus4seguridades" name="${jugador}_bonus4seguridades">
-                  <label class="form-check-label" for="${jugador}_bonus4seguridades">4 seguridades</label>
-                </div>
-                <div class="form-check mb-2">
-                  <input type="checkbox" class="form-check-input" id="${jugador}_viajeSeguro" name="${jugador}_viajeSeguro">
-                  <label class="form-check-label" for="${jugador}_viajeSeguro">Viaje seguro</label>
-                </div>
-              </div>
-            `;
-            formJugadores.appendChild(div);
-          });
-
-          // Mostrar resumen de puntos acumulados
-          mostrarResumen(partida);
-
-          return partida;
-        } else {
-          throw new Error(`Error ${response.status}: ${response.statusText}`);
-        }
-      } catch (error) {
-        console.error('Error al obtener la partida:', error);
-        alert('No se pudo cargar la partida. Verifica el servidor.');
-        return null;
-      }
-    }
-
-    function mostrarResumen(partida) {
-      const resumenDiv = document.getElementById('tablaResumen');
-      const totales = {};
-
-      // Inicializar totales
-      partida.participantes.forEach(participante => {
-        totales[participante] = [];
-      });
-
-      // Calcular puntos por ronda
-      partida.manos.forEach((mano, index) => {
-        partida.participantes.forEach(participante => {
-          const puntos = (mano[`${participante}_recorrido`] || 0) +
-            (mano[`${participante}_viajeCompleto`] ? 400 : 0) +
-            (mano[`${participante}_tk`] ? 300 : 0) +
-            ((mano[`${participante}_seguridades`] || 0) * 100) +
-            (mano[`${participante}_bonus4seguridades`] ? 300 : 0) +
-            (mano[`${participante}_viajeSeguro`] ? 300 : 0) +
-            (mano[`${participante}_bloqueo`] ? 500 : 0) +
-            (mano[`${participante}_accionDemorada`] ? 300 : 0) +
-            (mano[`${participante}_alargue`] ? 200 : 0);
-
-          totales[participante].push(puntos);
-        });
-      });
-
-      // Generar tabla resumen
-      let html = '<table class="table table-bordered"><thead><tr>';
-      partida.participantes.forEach(participante => {
-        html += `<th>${participante}</th>`;
-      });
-      html += '</tr></thead><tbody>';
-
-      const maxRondas = Math.max(...Object.values(totales).map(arr => arr.length));
-      for (let i = 0; i < maxRondas; i++) {
-        html += '<tr>';
-        partida.participantes.forEach(participante => {
-          html += `<td>${totales[participante][i] || 0}</td>`;
-        });
-        html += '</tr>';
-      }
-
-      html += '</tbody></table>';
-      resumenDiv.innerHTML = html;
-    }
-
-    async function guardarPartida(partida) {
-      try {
-        const response = await fetch(`/api/partidas/${partida.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(partida)
-        });
-        if (!response.ok) {
-          throw new Error('Error al guardar la partida en el servidor');
-        }
-      } catch (error) {
-        console.error(error);
-        alert('No se pudo guardar la partida. Verifica el servidor.');
-      }
-    }
-
-    async function agregarMano(event) {
-      event.preventDefault();
-      try {
-        const formData = new FormData(event.target);
-        const nuevaMano = {};
-        const participantesInvalidos = [];
-
-        formData.forEach((value, key) => {
-          if (key.endsWith('_recorrido')) {
-            const recorrido = Number(value);
-            if (recorrido % 25 !== 0) {
-              participantesInvalidos.push(key.split('_')[0]); // Extraer el nombre del participante
-            }
-          }
-          nuevaMano[key] = isNaN(value) ? value : Number(value);
-        });
-
-        if (participantesInvalidos.length > 0) {
-          alert(`Error: Los puntajes de recorrido para los siguientes participantes no son válidos (deben ser múltiplos de 25): ${participantesInvalidos.join(', ')}`);
-          return;
-        }
-
-        const partida = await obtenerPartida();
-        partida.manos.push(nuevaMano);
-
-        // Recalculate scores and check for a winner
-        const totales = {};
-        partida.participantes.forEach(participante => {
-          totales[participante] = 0;
-        });
-
-        partida.manos.forEach(mano => {
-          partida.participantes.forEach(participante => {
-            totales[participante] += mano[`${participante}_puntos`] || 0;
-          });
-        });
-
-        let ganador = null;
-        for (const [participante, puntos] of Object.entries(totales)) {
-          if (puntos >= 5000) {
-            ganador = participante;
-            partida.finalizada = true;
-            break;
-          }
-        }
-
-        if (ganador) {
-          partida.ganador = ganador;
-          alert(`🎉 ¡Felicidades! El ganador es: ${ganador} 🏆`);
-        }
-
-        await guardarPartida(partida);
-        alert('Mano agregada exitosamente.');
-        location.reload();
-      } catch (error) {
-        console.error('Error al agregar la mano:', error);
-        alert('No se pudo agregar la mano. Verifica el servidor.');
-      }
-    }
-
-    document.getElementById('formMano').addEventListener('submit', agregarMano);
-
-    obtenerPartida().then(partida => {
-      if (!partida) {
-        resumenDiv.innerHTML = "<p class='text-danger'>No se pudo cargar la partida. Verifica el servidor.</p>";
-        formPartida.style.display = 'none';
-        return;
-      }
-
-      if (partida.finalizada) {
-        mensajeFinalizada.style.display = 'block';
-        document.getElementById('agregarManoCard').style.display = 'none';
-
-        // Display winner message
-        if (partida.ganador) {
-          const mensajeGanador = document.getElementById('mensajeGanador');
-          const nombreGanador = document.getElementById('nombreGanador');
-          nombreGanador.textContent = partida.ganador;
-          mensajeGanador.style.display = 'block';
-        }
-      }
-    });
-  </script>
 </body>
 </html>

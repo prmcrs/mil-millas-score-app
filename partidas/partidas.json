@@ -8,34 +8,86 @@
       "EQ2"
     ],
     "manos": [
-    {
-      "EQ1_recorrido": 1000,
-      "EQ1_seguridades": 4,
-      "EQ1_viajeCompleto": "on",
-      "EQ1_tk": "on",
-      "EQ1_bonus4seguridades": "on",
-      "EQ1_viajeSeguro": "on",
-      "EQ2_recorrido": 925,
-      "EQ2_seguridades": 0
-    },
-    {
-      "EQ1_recorrido": 1000,
-      "EQ1_seguridades": 2,
-      "EQ1_viajeSeguro": "on",
-      "EQ2_recorrido": 950,
-      "EQ2_seguridades": 2
-    },
-    {
-      "EQ1_recorrido": 1000,
-      "EQ1_seguridades": 4,
-      "EQ1_viajeCompleto": "on",
-      "EQ1_tk": "on",
-      "EQ1_bonus4seguridades": "on",
-      "EQ1_viajeSeguro": "on",
-      "EQ2_recorrido": 100,
-      "EQ2_seguridades": 0
-    }
-  ],
-  "finalizada": false
-}
+      {
+        "EQ1_recorrido": 1000,
+        "EQ1_seguridades": 4,
+        "EQ1_viajeCompleto": true,
+        "EQ1_tk": true,
+        "EQ1_bonus4seguridades": true,
+        "EQ1_viajeSeguro": true,
+        "EQ2_recorrido": 925,
+        "EQ2_seguridades": 0,
+        "EQ1_bloqueo": false,
+        "EQ1_accionDemorada": false,
+        "EQ1_alargue": false,
+        "EQ1_puntos": 2700,
+        "EQ2_viajeCompleto": false,
+        "EQ2_tk": false,
+        "EQ2_bonus4seguridades": false,
+        "EQ2_viajeSeguro": false,
+        "EQ2_bloqueo": false,
+        "EQ2_accionDemorada": false,
+        "EQ2_alargue": false,
+        "EQ2_puntos": 925
+      },
+      {
+        "EQ1_recorrido": 1000,
+        "EQ1_seguridades": 2,
+        "EQ1_viajeSeguro": true,
+        "EQ2_recorrido": 950,
+        "EQ2_seguridades": 2,
+        "EQ1_viajeCompleto": false,
+        "EQ1_tk": false,
+        "EQ1_bonus4seguridades": false,
+        "EQ1_bloqueo": false,
+        "EQ1_accionDemorada": false,
+        "EQ1_alargue": false,
+        "EQ1_puntos": 1500,
+        "EQ2_viajeCompleto": false,
+        "EQ2_tk": false,
+        "EQ2_bonus4seguridades": false,
+        "EQ2_viajeSeguro": false,
+        "EQ2_bloqueo": false,
+        "EQ2_accionDemorada": false,
+        "EQ2_alargue": false,
+        "EQ2_puntos": 1150
+      },
+      {
+        "EQ1_recorrido": 1000,
+        "EQ1_seguridades": 4,
+        "EQ1_viajeCompleto": true,
+        "EQ1_tk": true,
+        "EQ1_bonus4seguridades": true,
+        "EQ1_viajeSeguro": true,
+        "EQ2_recorrido": 100,
+        "EQ2_seguridades": 0,
+        "EQ1_bloqueo": false,
+        "EQ1_accionDemorada": false,
+        "EQ1_alargue": false,
+        "EQ1_puntos": 2700,
+        "EQ2_viajeCompleto": false,
+        "EQ2_tk": false,
+        "EQ2_bonus4seguridades": false,
+        "EQ2_viajeSeguro": false,
+        "EQ2_bloqueo": false,
+        "EQ2_accionDemorada": false,
+        "EQ2_alargue": false,
+        "EQ2_puntos": 100
+      }
+    ],
+    "finalizada": false
+  },
+  {
+    "id": "partida-1789005719853",
+    "nombre": "miercoles de millas (09/09/2026)",
+    "modo": "individual",
+    "participantes": [
+      "Pablo",
+      "Ricardo",
+      "Juanjo"
+    ],
+    "manos": [],
+    "finalizada": false,
+    "fechaCreacion": "2026-09-10T02:01:59.859Z"
+  }
 ]

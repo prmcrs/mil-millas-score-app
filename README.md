@@ -1,74 +1,102 @@
-# MIL MILLAS - Aplicación de Gestión de Partidas
+# Mil Millas Score
 
 ## Descripción
-Esta es una aplicación web para gestionar partidas del juego **Mil Millas**. Permite crear partidas en modo individual o por equipos, registrar manos jugadas, calcular puntajes y determinar un ganador.
+Esta aplicación web está pensada para registrar partidas de Mil Millas, mantener el historial y calcular puntajes en tiempo real. Actualmente la app funciona como una herramienta de mesa para partidas rápidas, con soporte para modo individual y equipos, almacenamiento local vía archivo JSON y un flujo simple de carga/guardado.
 
-## Requisitos del Sistema
-- **Node.js** (versión 14 o superior)
-- Navegador web moderno (Google Chrome, Firefox, Edge, etc.)
+## Requisitos
+- Node.js 18+ recomendado
+- npm
+- navegador moderno
 
-## Instalación
-1. Clona este repositorio:
+## Instalación local
+1. Clona el repositorio y entra al proyecto:
    ```bash
-   git clone <URL_DEL_REPOSITORIO>
+   git clone <url-del-repo>
    cd mil-millas-score-app
    ```
 
-2. Instala las dependencias necesarias:
+2. Instala dependencias:
    ```bash
-   npm install express
+   npm install
    ```
 
-3. Asegúrate de que la carpeta `partidas` existe en el directorio raíz del proyecto. Si no existe, el servidor la creará automáticamente.
-
-## Ejecución
-1. Inicia el servidor backend:
+3. Inicia la app:
    ```bash
-   node server.js
+   npm start
    ```
 
-2. Abre tu navegador y accede a la aplicación en:
-   ```
+4. Abre en el navegador:
+   ```text
    http://localhost:3000
    ```
 
-## Estructura del Proyecto
-- **`index.html`**: Página principal para crear nuevas partidas y ver las partidas activas/finalizadas.
-- **`partida.html`**: Página para gestionar una partida específica, registrar manos y calcular puntajes.
-- **`app.js`**: Lógica principal de la aplicación (frontend).
-- **`server.js`**: Servidor backend para manejar las partidas.
-- **`partidas/partidas.json`**: Archivo donde se almacenan las partidas (creado automáticamente si no existe).
+## Estructura
+- `server.js`: backend Express con API REST y persistencia local.
+- `app.js`: lógica del frontend y reglas de puntaje.
+- `index.html`: pantalla principal para crear y listar partidas.
+- `partida.html`: pantalla de la partida activa.
+- `style.css`: estilos modernos y responsivos.
+- `partidas/partidas.json`: almacenamiento de todas las partidas.
 
-## Notas Importantes
-- Las partidas se almacenan en el archivo `partidas/partidas.json`. Este archivo debe estar en la carpeta `partidas` dentro del directorio raíz del proyecto.
-- El servidor backend debe estar en ejecución para que la aplicación funcione correctamente.
-- Si el archivo `partidas.json` se elimina o se corrompe, se generará un archivo vacío automáticamente al iniciar el servidor.
+## Funcionalidades actuales
+- Crear partidas en modo individual o por equipos.
+- Registrar manos por participante.
+- Validar recorrido y valores numéricos.
+- Calcular puntajes por ronda y total acumulado.
+- Detectar ganador cuando se supera la meta de 5000 puntos.
+- Persistir datos en archivo local JSON.
 
-## Funcionalidades
-1. **Página de Inicio (`index.html`)**:
-   - Crear nuevas partidas en modo individual (3 jugadores) o por equipos (2 equipos).
-   - Ver una lista de partidas activas y finalizadas.
+## Reglas de Mil Millas implementadas
+La lógica de puntaje usada por la app sigue el flujo de reglas del juego que ya estaba definido en el proyecto:
+- Recorrido: 0 a 1000, múltiplo de 25.
+- Viaje completo: +400.
+- TK: +300.
+- Seguridad: +100 por seguridad.
+- Bonus por 4 seguridades: +300.
+- Viaje seguro: +300.
+- Bloqueo: +500.
+- Acción demorada: +300.
+- Alargue: +200.
+- Meta para ganador: 5000 puntos.
 
-2. **Página de Partida (`partida.html`)**:
-   - Registrar manos jugadas y calcular puntajes automáticamente.
-   - Mostrar un resumen de puntos acumulados.
-   - Determinar el ganador cuando un jugador o equipo alcanza 5000 puntos.
+## Qué falta para sistematizar todo el juego
+La app ya cubre la parte operativa más importante, pero para que el sistema quede completo como herramienta de mesa todavía falta avanzar en varios puntos:
 
-3. **Backend (`server.js`)**:
-   - Maneja las solicitudes para guardar y recuperar partidas.
-   - Almacena las partidas en el archivo `partidas/partidas.json`.
+1. Reglas del juego más avanzadas
+   - manejar variantes de mesa, reglas caseras, errores de puntuación y bonificaciones especiales.
+   - definir si hay formato de equipos con doble puntaje, desempates o reglas de reinicio.
 
-## Problemas Comunes
-- **No se guardan las partidas**:
-  - Asegúrate de que el servidor backend está en ejecución.
-  - Verifica que tienes permisos de escritura en la carpeta `partidas`.
+2. Historial más detallado
+   - mostrar cada mano con la lista exacta de opciones elegidas por participante.
+   - permitir edición de manos ya cargadas.
 
-- **No se cargan las partidas activas**:
-  - Asegúrate de que el archivo `partidas/partidas.json` existe y contiene datos válidos.
-  - Revisa la consola del navegador para ver si hay errores en las solicitudes al servidor.
+3. Control de finalización más robusto
+   - bloquear la carga de nuevas manos al llegar a la meta.
+   - evitar que una partida siga sin declarar ganador claro.
 
-## Contribuciones
-Si deseas contribuir a este proyecto, por favor abre un issue o envía un pull request.
+4. Mejoras de UX
+   - permitir volver atrás, anular la última mano, exportar partidas.
+   - agregar vista de ranking, historial de rondas y filtros por estado.
+
+5. Seguridad y despliegue
+   - mover la contraseña a backend/configuración de entorno.
+   - usar variables de entorno para puerto y secretos.
+   - preparar despliegue en servicios como Render, Vercel + Railway, Docker, o un VPS simple.
+
+## Flujo de despliegue sugerido
+Sin infraestructura aún, una evolución razonable sería:
+
+- Local: `npm install` + `npm start`
+- Staging: subir a un servicio con Node.js y persistencia en volumen
+- Producción: usar un contenedor simple o un servicio PaaS
+- Persistencia: migrar de JSON local a base de datos o almacenamiento externo en futuro
+- Seguridad: sacar la contraseña del cliente y moverla a un backend con sesión o token
+
+## Observaciones técnicas
+- La app guarda datos en JSON local para simplificar el prototipo.
+- Se unificó la convención de `participantes` para evitar inconsistencias entre `jugadores` y `participantes`.
+- La lógica de cálculo fue centralizada para evitar duplicación y mantener la misma regla en todo el flujo.
+- La validación de campos numéricos y booleanos se hace de forma explícita para evitar errores de tipo.
 
 ## Licencia
-Este proyecto está bajo la licencia MIT.
+MIT
