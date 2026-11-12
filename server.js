@@ -7,8 +7,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'partidas', 'partidas.json');
 
-app.use('/partidas', (req,res)=>res.status(403).end());
-app.use(express.static(path.join(__dirname), { dotfiles: 'deny' }));
+app.use((req,res,next)=>{if(req.path.startsWith('/api/'))return next();const allowed=['/','/index.html','/partida.html','/style.css','/app.js','/score.js'];if(allowed.includes(req.path)||req.path.startsWith('/images/'))return next();return res.status(404).end();});
+app.use(express.static(path.join(__dirname), { dotfiles: 'deny', index: false }));
 app.use(express.json());
 
 if (!fs.existsSync(DATA_FILE)) {
@@ -154,6 +154,7 @@ app.post('/api/partidas', (req, res) => {
     if (nuevaPartida.participantes.length < 2 || nuevaPartida.participantes.length > 6 || new Set(nuevaPartida.participantes.map((n) => String(n).trim().toLowerCase())).size !== nuevaPartida.participantes.length) {
       return res.status(400).json({ error: 'Se requieren entre 2 y 6 participantes con nombres distintos' });
     }
+    nuevaPartida.version=1;
     partidas.push(nuevaPartida);
     writePartidas(partidas);
 
@@ -177,6 +178,7 @@ app.put('/api/partidas/:id', (req, res) => {
     if (!partidaActualizada || String(partidaActualizada.id) !== String(id) || !Array.isArray(partidaActualizada.participantes) || !Array.isArray(partidaActualizada.manos)) {
       return res.status(400).json({ error: 'Datos de partida inválidos' });
     }
+    if (Number(req.body.version||0)!==Number(partidas[index].version||0)) return res.status(409).json({error:'La partida cambió en otra sesión. Recargá antes de guardar.'});
     if (partidaActualizada.participantes.join('\u0000') !== partidas[index].participantes.join('\u0000')) return res.status(400).json({error:'No se pueden cambiar participantes existentes'});
     if (partidaActualizada.manos.length > 500) return res.status(400).json({error:'Demasiadas manos'});
     try { partidaActualizada.manos = partidaActualizada.manos.map(m=>GAME.hand(partidaActualizada.participantes,m,true)); }
@@ -184,10 +186,11 @@ app.put('/api/partidas/:id', (req, res) => {
     const winners=GAME.winner(partidaActualizada);
     partidaActualizada.finalizada=winners.length>0;
     partidaActualizada.ganador=winners.join(' / ')||null;
+    partidaActualizada.version=Number(partidas[index].version||0)+1;
     partidas[index] = partidaActualizada;
     writePartidas(partidas);
 
-    res.send('Partida actualizada');
+    res.json(partidaActualizada);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
