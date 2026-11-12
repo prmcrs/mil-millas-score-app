@@ -153,6 +153,7 @@ app.post('/api/partidas', (req, res) => {
   try {
     const partidas = readPartidas();
     const nuevaPartida = normalizeParticipantes(req.body);
+    if(nuevaPartida && (!Array.isArray(nuevaPartida.manos)||nuevaPartida.manos.length!==0))return res.status(400).json({error:'La partida nueva no puede incluir manos'});
 
     if (!nuevaPartida || !nuevaPartida.id || !nuevaPartida.nombre || !Array.isArray(nuevaPartida.participantes) || nuevaPartida.participantes.length === 0) {
       return res.status(400).json({ error: 'Datos de partida incompletos' });
@@ -161,7 +162,7 @@ app.post('/api/partidas', (req, res) => {
     if (partidas.some((p) => String(p.id) === String(nuevaPartida.id))) {
       return res.status(409).json({ error: 'Ya existe una partida con ese ID' });
     }
-    if (nuevaPartida.participantes.length < 2 || nuevaPartida.participantes.length > 6 || new Set(nuevaPartida.participantes.map((n) => String(n).trim().toLowerCase())).size !== nuevaPartida.participantes.length) {
+    if (nuevaPartida.participantes.length < 2 || nuevaPartida.participantes.length > 6 || nuevaPartida.participantes.some(n=>typeof n!=='string'||!n.trim()||n.length>60) || new Set(nuevaPartida.participantes.map((n) => String(n).trim().toLowerCase())).size !== nuevaPartida.participantes.length) {
       return res.status(400).json({ error: 'Se requieren entre 2 y 6 participantes con nombres distintos' });
     }
     nuevaPartida.version=1;
@@ -189,6 +190,7 @@ app.put('/api/partidas/:id', (req, res) => {
       return res.status(400).json({ error: 'Datos de partida inválidos' });
     }
     if (Number(req.body.version||0)!==Number(partidas[index].version||0)) return res.status(409).json({error:'La partida cambió en otra sesión. Recargá antes de guardar.'});
+    if (partidaActualizada.modo!==partidas[index].modo || partidaActualizada.nombre!==partidas[index].nombre) return res.status(400).json({error:'No se pueden cambiar los datos principales de la partida'});
     if (partidaActualizada.participantes.join('\u0000') !== partidas[index].participantes.join('\u0000')) return res.status(400).json({error:'No se pueden cambiar participantes existentes'});
     if (partidaActualizada.manos.length > 500) return res.status(400).json({error:'Demasiadas manos'});
     try { partidaActualizada.manos = partidaActualizada.manos.map(m=>GAME.hand(partidaActualizada.participantes,m,true)); }
