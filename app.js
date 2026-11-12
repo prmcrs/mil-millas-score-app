@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const PASSWORD = 'carlonga4ever';
+  const GAME = window.MilMillas;
+  const escapeHtml = (v) => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const GAME_RULES = {
     maxRecorrido: 1000,
     ganadorMeta: 5000,
@@ -14,37 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
       alargue: 200,
     },
   };
-
-  function setCookie(name, value, hours) {
-    const date = new Date();
-    date.setTime(date.getTime() + hours * 60 * 60 * 1000);
-    document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
-  }
-
-  function getCookie(name) {
-    const cookies = document.cookie.split(';');
-    for (const cookie of cookies) {
-      const [key, value] = cookie.trim().split('=');
-      if (key === name) {
-        return value;
-      }
-    }
-    return null;
-  }
-
-  function checkLogin() {
-    const storedPassword = getCookie('authPassword');
-    if (storedPassword !== PASSWORD) {
-      const userPassword = prompt('Por favor, ingresa la contraseña:');
-      if (userPassword !== PASSWORD) {
-        alert('Contraseña incorrecta. No puedes acceder.');
-        window.location.href = 'https://www.google.com';
-        return false;
-      }
-      setCookie('authPassword', PASSWORD, 12);
-    }
-    return true;
-  }
 
   function normalizeParticipantes(partida) {
     if (!partida || typeof partida !== 'object') {
@@ -180,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const ganador = maxPuntos >= GAME_RULES.ganadorMeta ? Object.entries(totales).filter(([, puntos]) => puntos === maxPuntos).map(([nombre]) => nombre).join(' / ') : null;
 
     const rows = partida.participantes
-      .map((participante) => `<tr><td><strong>${participante}</strong></td><td>${totales[participante]} pts</td></tr>`)
+      .map((participante) => `<tr><td><strong>${escapeHtml(participante)}</strong></td><td>${totales[participante]} pts</td></tr>`)
       .join('');
 
     const summary = `
@@ -193,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
     summaryEl.innerHTML = summary;
 
     if (ganador) {
-      summaryEl.insertAdjacentHTML('beforeend', `<h3 class="winner-banner">🎉 Ganador: ${ganador} 🎉</h3>`);
+      summaryEl.insertAdjacentHTML('beforeend', `<h3 class="winner-banner">🎉 Ganador: ${escapeHtml(ganador)} 🎉</h3>`);
     }
 
     return ganador;
@@ -202,46 +172,46 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderParticipantFields(participantes, targetEl) {
     targetEl.innerHTML = '';
 
-    participantes.forEach((participante) => {
+    participantes.forEach((participante, index) => {
       const card = document.createElement('div');
       card.className = 'player-card';
       card.innerHTML = `
-        <h3>${participante}</h3>
+        <h3>${escapeHtml(participante)}</h3>
         <div class="field-row">
-          <label for="${participante}_recorrido">Recorrido (0 a 1000)</label>
-          <input type="number" id="${participante}_recorrido" name="${participante}_recorrido" min="0" max="1000" step="25" required>
+          <label for="field${index}_recorrido">Recorrido (0 a 1000)</label>
+          <input type="number" id="field${index}_recorrido" name="${participante}_recorrido" min="0" max="1000" step="25" required>
         </div>
         <div class="field-row checkbox-row">
-          <input type="checkbox" id="${participante}_viajeCompleto" name="${participante}_viajeCompleto">
-          <label for="${participante}_viajeCompleto">Viaje completo</label>
+          <input type="checkbox" id="field${index}_viajeCompleto" name="${participante}_viajeCompleto">
+          <label for="field${index}_viajeCompleto">Viaje completo</label>
         </div>
         <div class="field-row checkbox-row">
-          <input type="checkbox" id="${participante}_tk" name="${participante}_tk">
-          <label for="${participante}_tk">TK</label>
+          <input type="checkbox" id="field${index}_tk" name="${participante}_tk">
+          <label for="field${index}_tk">TK</label>
         </div>
         <div class="field-row">
-          <label for="${participante}_seguridades">Seguridades</label>
-          <input type="number" id="${participante}_seguridades" name="${participante}_seguridades" min="0" max="4" value="0">
+          <label for="field${index}_seguridades">Seguridades</label>
+          <input type="number" id="field${index}_seguridades" name="${participante}_seguridades" min="0" max="4" value="0">
         </div>
         <div class="field-row checkbox-row">
-          <input type="checkbox" id="${participante}_bonus4seguridades" name="${participante}_bonus4seguridades">
-          <label for="${participante}_bonus4seguridades">4 seguridades</label>
+          <input type="checkbox" id="field${index}_bonus4seguridades" name="${participante}_bonus4seguridades">
+          <label for="field${index}_bonus4seguridades">4 seguridades</label>
         </div>
         <div class="field-row checkbox-row">
-          <input type="checkbox" id="${participante}_viajeSeguro" name="${participante}_viajeSeguro">
-          <label for="${participante}_viajeSeguro">Viaje seguro</label>
+          <input type="checkbox" id="field${index}_viajeSeguro" name="${participante}_viajeSeguro">
+          <label for="field${index}_viajeSeguro">Viaje seguro</label>
         </div>
         <div class="field-row checkbox-row">
-          <input type="checkbox" id="${participante}_bloqueo" name="${participante}_bloqueo">
-          <label for="${participante}_bloqueo">Bloqueo</label>
+          <input type="checkbox" id="field${index}_bloqueo" name="${participante}_bloqueo">
+          <label for="field${index}_bloqueo">Bloqueo</label>
         </div>
         <div class="field-row checkbox-row">
-          <input type="checkbox" id="${participante}_accionDemorada" name="${participante}_accionDemorada">
-          <label for="${participante}_accionDemorada">Acción demorada</label>
+          <input type="checkbox" id="field${index}_accionDemorada" name="${participante}_accionDemorada">
+          <label for="field${index}_accionDemorada">Acción demorada</label>
         </div>
         <div class="field-row checkbox-row">
-          <input type="checkbox" id="${participante}_alargue" name="${participante}_alargue">
-          <label for="${participante}_alargue">Alargue</label>
+          <input type="checkbox" id="field${index}_alargue" name="${participante}_alargue">
+          <label for="field${index}_alargue">Alargue</label>
         </div>
       `;
       targetEl.appendChild(card);
@@ -259,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderParticipantesInputs() {
       const modo = modoJuego.value;
-      const cantidad = modo === 'equipos' ? 2 : 3;
+      const cantidad = Number(document.getElementById('cantidadParticipantes').value);
       camposJugadores.innerHTML = '';
 
       for (let index = 1; index <= cantidad; index += 1) {
@@ -288,14 +258,14 @@ document.addEventListener('DOMContentLoaded', () => {
         partidosActivos.innerHTML = activas.length
           ? activas
               .sort((a, b) => new Date(b.fechaCreacion) - new Date(a.fechaCreacion))
-              .map((partida) => `<li><a href="partida.html?id=${partida.id}">${partida.nombre}</a></li>`)
+              .map((partida) => `<li><a href="partida.html?id=${encodeURIComponent(partida.id)}">${escapeHtml(partida.nombre)}</a></li>`)
               .join('')
           : '<li class="empty-state">No hay partidas activas.</li>';
 
         partidasFinalizadas.innerHTML = finalizadas.length
           ? finalizadas
               .sort((a, b) => new Date(b.fechaCreacion) - new Date(a.fechaCreacion))
-              .map((partida) => `<li><a href="partida.html?id=${partida.id}">${partida.nombre}</a></li>`)
+              .map((partida) => `<li><a href="partida.html?id=${encodeURIComponent(partida.id)}">${escapeHtml(partida.nombre)}</a></li>`)
               .join('')
           : '<li class="empty-state">No hay partidas finalizadas.</li>';
 
@@ -308,6 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     modoJuego.addEventListener('change', renderParticipantesInputs);
+    document.getElementById('cantidadParticipantes').addEventListener('change', renderParticipantesInputs);
 
     formNuevaPartida.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -317,7 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .map((input) => input.value.trim())
         .filter(Boolean);
 
-      if (!nombrePartida || participantes.length === 0) {
+      if (!nombrePartida || participantes.length !== Number(document.getElementById('cantidadParticipantes').value) || new Set(participantes.map(x=>x.toLowerCase())).size!==participantes.length) {
         alert('Completa el nombre de la partida y todos los participantes.');
         return;
       }
@@ -355,10 +326,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (document.body.dataset.page === 'partida') {
-    if (!checkLogin()) {
-      return;
-    }
-
     const urlParams = new URLSearchParams(window.location.search);
     const partidaId = urlParams.get('id');
 
@@ -423,6 +390,33 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    function renderHistory(partida) {
+      const el=document.getElementById('historialManos');el.textContent='';
+      partida.manos.forEach((mano,index)=>{
+        const row=document.createElement('div');row.className='history-row';
+        const title=document.createElement('span');title.textContent='Mano '+(index+1)+' · '+partida.participantes.map(n=>n+': '+(mano[n+'_puntos']||0)+' pts').join(' · ');
+        const edit=document.createElement('button');edit.type='button';edit.textContent='Editar';edit.disabled=partida.finalizada;edit.onclick=()=>editHand(partida,index);
+        const remove=document.createElement('button');remove.type='button';remove.textContent='Anular';remove.disabled=partida.finalizada;remove.onclick=()=>removeHand(partida,index);
+        row.append(title,edit,remove);el.appendChild(row);
+      });if(!partida.manos.length)el.textContent='Todavía no hay manos cargadas.';
+    }
+    async function persistHistory(partida){
+      const winners=GAME.winner(partida);partida.finalizada=winners.length>0;partida.ganador=winners.join(' / ')||null;
+      await guardarPartida(partida);window.location.reload();
+    }
+    async function removeHand(partida,index){
+      if(!confirm('¿Anular la mano '+(index+1)+'?'))return;
+      partida.manos.splice(index,1);try{await persistHistory(partida);}catch(e){}
+    }
+    async function editHand(partida,index){
+      const old=partida.manos[index],updated={...old};
+      for(const name of partida.participantes){
+        const miles=prompt(name+' — recorrido (0 a 1000)',String(old[name+'_recorrido']||0));if(miles===null)return;
+        const safe=prompt(name+' — seguridades (0 a 4)',String(old[name+'_seguridades']||0));if(safe===null)return;
+        updated[name+'_recorrido']=miles;updated[name+'_seguridades']=safe;
+      }
+      try{partida.manos[index]=GAME.hand(partida.participantes,updated,true);await persistHistory(partida);}catch(e){alert(e.message);}
+    }
     async function cargarPartida() {
       const partida = await obtenerPartida();
       if (!partida) {
@@ -434,6 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
       tituloPartida.textContent = `Partida: ${partida.nombre}`;
       subtituloPartida.textContent = `${partida.modo} · ${partida.participantes.join(' vs ')}`;
       renderParticipantFields(partida.participantes, formJugadores);
+      renderHistory(partida);
 
       const ganador = renderSummary(partida, tablaResumen);
       if (partida.finalizada || ganador) {
@@ -476,6 +471,8 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
+        try { Object.assign(nuevaMano, GAME.hand(partida.participantes, nuevaMano, true)); }
+        catch (error) { alert(error.message); return; }
         partida.manos.push(nuevaMano);
 
         const totals = getTotales(partida);
