@@ -2,11 +2,13 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 
+const GAME = require('./score');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'partidas', 'partidas.json');
 
-app.use(express.static(path.join(__dirname)));
+app.use('/partidas', (req,res)=>res.status(403).end());
+app.use(express.static(path.join(__dirname), { dotfiles: 'deny' }));
 app.use(express.json());
 
 if (!fs.existsSync(DATA_FILE)) {
@@ -175,6 +177,13 @@ app.put('/api/partidas/:id', (req, res) => {
     if (!partidaActualizada || String(partidaActualizada.id) !== String(id) || !Array.isArray(partidaActualizada.participantes) || !Array.isArray(partidaActualizada.manos)) {
       return res.status(400).json({ error: 'Datos de partida inválidos' });
     }
+    if (partidaActualizada.participantes.join('\u0000') !== partidas[index].participantes.join('\u0000')) return res.status(400).json({error:'No se pueden cambiar participantes existentes'});
+    if (partidaActualizada.manos.length > 500) return res.status(400).json({error:'Demasiadas manos'});
+    try { partidaActualizada.manos = partidaActualizada.manos.map(m=>GAME.hand(partidaActualizada.participantes,m,true)); }
+    catch(error){return res.status(400).json({error:error.message});}
+    const winners=GAME.winner(partidaActualizada);
+    partidaActualizada.finalizada=winners.length>0;
+    partidaActualizada.ganador=winners.join(' / ')||null;
     partidas[index] = partidaActualizada;
     writePartidas(partidas);
 
