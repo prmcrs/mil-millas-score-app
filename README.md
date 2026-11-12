@@ -100,3 +100,38 @@ Sin infraestructura aún, una evolución razonable sería:
 
 ## Licencia
 MIT
+
+## Cambios en desarrollo (PR #1)
+- `score.js`: motor de puntuación compartido entre navegador y servidor.
+- Participantes configurables entre 2 y 6, en modo individual o equipos.
+- Historial de manos con edición completa y anulación; se puede corregir una partida finalizada.
+- Cálculo de ganadores por máximo puntaje, con soporte para empates.
+- Validación de manos en la API y protección contra guardados concurrentes mediante `version` (los registros antiguos comienzan en versión 0).
+- Escritura atómica del archivo de partidas; el JSON existente no se modifica en el PR.
+- Pruebas de puntuación con `npm test`.
+
+### Antes de integrar
+1. Respaldar `partidas/partidas.json` del servidor donde se usa la aplicación.
+2. Probar carga, edición y anulación con copias de partidas reales, incluyendo partidas antiguas.
+3. Probar dos navegadores editando la misma partida y comprobar que se recibe HTTP 409.
+4. Revisar la autenticación antes de publicar la aplicación en Internet: **la API todavía no tiene control de acceso**. No exponerla públicamente hasta implementar una sesión autenticada en el backend.
+5. Verificar los checks de GitHub Actions y realizar una prueba manual del frontend antes de fusionar.
+
+
+### Autenticación (obligatoria)
+El servidor **no inicia** si no configurás `APP_PASSWORD`. No hay contraseña incluida en el repositorio.
+
+Linux/macOS:
+```bash
+APP_PASSWORD='elegi-una-clave-larga-y-unica' npm start
+```
+
+PowerShell:
+```powershell
+$env:APP_PASSWORD = 'elegi-una-clave-larga-y-unica'
+npm start
+```
+
+Las sesiones se guardan en memoria, duran 12 horas y se invalidan al reiniciar el servidor. En producción, publicar únicamente detrás de HTTPS (reverse proxy con TLS). Las cookies son HttpOnly y SameSite=Strict; la opción Secure se activa cuando Express detecta una conexión HTTPS directa. Si usás un reverse proxy que termina TLS, configurar correctamente `trust proxy` y verificar las cookies antes del despliegue.
+
+**Limitaciones actuales:** no hay rate limiting de intentos de login, persistencia de sesiones ni pruebas E2E de autenticación. No hacer merge ni exponer la API a Internet sin revisar esos puntos.

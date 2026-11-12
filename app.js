@@ -1,5 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const PASSWORD = 'carlonga4ever';
+  const GAME = window.MilMillas;
+  async function ensureSession(){
+    let response=await fetch('/api/session');if(!response.ok)throw Error('No se pudo verificar la sesión');
+    let state=await response.json();if(state.authenticated)return true;
+    const password=prompt('Contraseña de Mil Millas:');if(password===null)return false;
+    response=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password})});
+    if(!response.ok){alert('Contraseña incorrecta');return false;}return true;
+  }
+  const escapeHtml = (v) => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const GAME_RULES = {
     maxRecorrido: 1000,
     ganadorMeta: 5000,
@@ -14,37 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
       alargue: 200,
     },
   };
-
-  function setCookie(name, value, hours) {
-    const date = new Date();
-    date.setTime(date.getTime() + hours * 60 * 60 * 1000);
-    document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
-  }
-
-  function getCookie(name) {
-    const cookies = document.cookie.split(';');
-    for (const cookie of cookies) {
-      const [key, value] = cookie.trim().split('=');
-      if (key === name) {
-        return value;
-      }
-    }
-    return null;
-  }
-
-  function checkLogin() {
-    const storedPassword = getCookie('authPassword');
-    if (storedPassword !== PASSWORD) {
-      const userPassword = prompt('Por favor, ingresa la contraseña:');
-      if (userPassword !== PASSWORD) {
-        alert('Contraseña incorrecta. No puedes acceder.');
-        window.location.href = 'https://www.google.com';
-        return false;
-      }
-      setCookie('authPassword', PASSWORD, 12);
-    }
-    return true;
-  }
 
   function normalizeParticipantes(partida) {
     if (!partida || typeof partida !== 'object') {
@@ -81,14 +58,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const alargueKey = `${participante}_alargue`;
 
         const recorrido = Number(manoNormalizada[recorridoKey] ?? 0);
-        const seguridades = Number(manoNormalizada[segurosKey] ?? 0);
-        const viajeCompleto = Boolean(manoNormalizada[viajeCompletoKey]);
-        const tk = Boolean(manoNormalizada[tkKey]);
-        const bonus4 = Boolean(manoNormalizada[bonusKey]);
-        const viajeSeguro = Boolean(manoNormalizada[viajeSeguroKey]);
-        const bloqueo = Boolean(manoNormalizada[bloqueoKey]);
-        const accionDemorada = Boolean(manoNormalizada[accionDemoradaKey]);
-        const alargue = Boolean(manoNormalizada[alargueKey]);
+        const seguridades = Number(manoNormalizada[seguridadesKey] ?? 0);
+        const viajeCompleto = parseBoolean(manoNormalizada[viajeCompletoKey]);
+        const tk = parseBoolean(manoNormalizada[tkKey]);
+        const bonus4 = parseBoolean(manoNormalizada[bonusKey]);
+        const viajeSeguro = parseBoolean(manoNormalizada[viajeSeguroKey]);
+        const bloqueo = parseBoolean(manoNormalizada[bloqueoKey]);
+        const accionDemorada = parseBoolean(manoNormalizada[accionDemoradaKey]);
+        const alargue = parseBoolean(manoNormalizada[alargueKey]);
 
         const puntos =
           recorrido +
@@ -102,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
           (alargue ? GAME_RULES.premios.alargue : 0);
 
         manoNormalizada[recorridoKey] = recorrido;
-        manoNormalizada[segurosKey] = seguridades;
+        manoNormalizada[seguridadesKey] = seguridades;
         manoNormalizada[viajeCompletoKey] = viajeCompleto;
         manoNormalizada[tkKey] = tk;
         manoNormalizada[bonusKey] = bonus4;
@@ -134,30 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return Boolean(value);
   }
 
-  function scoreParticipantHand(participante, data) {
-    const recorrido = toNumber(data[`${participante}_recorrido`], 0);
-    const viajeCompleto = parseBoolean(data[`${participante}_viajeCompleto`]);
-    const tk = parseBoolean(data[`${participante}_tk`]);
-    const seguridades = toNumber(data[`${participante}_seguridades`], 0);
-    const bonus4 = parseBoolean(data[`${participante}_bonus4seguridades`]);
-    const viajeSeguro = parseBoolean(data[`${participante}_viajeSeguro`]);
-    const bloqueo = parseBoolean(data[`${participante}_bloqueo`]);
-    const accionDemorada = parseBoolean(data[`${participante}_accionDemorada`]);
-    const alargue = parseBoolean(data[`${participante}_alargue`]);
-
-    return (
-      recorrido +
-      (viajeCompleto ? GAME_RULES.premios.viajeCompleto : 0) +
-      (tk ? GAME_RULES.premios.tk : 0) +
-      seguridades * GAME_RULES.premios.seguridad +
-      (bonus4 ? GAME_RULES.premios.bonusCuatroSeguridades : 0) +
-      (viajeSeguro ? GAME_RULES.premios.viajeSeguro : 0) +
-      (bloqueo ? GAME_RULES.premios.bloqueo : 0) +
-      (accionDemorada ? GAME_RULES.premios.accionDemorada : 0) +
-      (alargue ? GAME_RULES.premios.alargue : 0)
-    );
-  }
-
   function getTotales(partida) {
     const totales = {};
     partida.participantes.forEach((participante) => {
@@ -177,10 +130,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderSummary(partida, summaryEl) {
     const totales = getTotales(partida);
     const maxPuntos = Math.max(...Object.values(totales), 0);
-    const ganador = Object.entries(totales).find(([, puntos]) => puntos >= GAME_RULES.ganadorMeta)?.[0] ?? null;
+    const ganador = maxPuntos >= GAME_RULES.ganadorMeta ? Object.entries(totales).filter(([, puntos]) => puntos === maxPuntos).map(([nombre]) => nombre).join(' / ') : null;
 
     const rows = partida.participantes
-      .map((participante) => `<tr><td><strong>${participante}</strong></td><td>${totales[participante]} pts</td></tr>`)
+      .map((participante) => `<tr><td><strong>${escapeHtml(participante)}</strong></td><td>${totales[participante]} pts</td></tr>`)
       .join('');
 
     const summary = `
@@ -193,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
     summaryEl.innerHTML = summary;
 
     if (ganador) {
-      summaryEl.insertAdjacentHTML('beforeend', `<h3 class="winner-banner">🎉 Ganador: ${ganador} 🎉</h3>`);
+      summaryEl.insertAdjacentHTML('beforeend', `<h3 class="winner-banner">🎉 Ganador: ${escapeHtml(ganador)} 🎉</h3>`);
     }
 
     return ganador;
@@ -202,46 +155,47 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderParticipantFields(participantes, targetEl) {
     targetEl.innerHTML = '';
 
-    participantes.forEach((participante) => {
+    participantes.forEach((participante, index) => {
       const card = document.createElement('div');
       card.className = 'player-card';
+      card.dataset.participante = participante;
       card.innerHTML = `
-        <h3>${participante}</h3>
+        <h3>${escapeHtml(participante)}</h3>
         <div class="field-row">
-          <label for="${participante}_recorrido">Recorrido (0 a 1000)</label>
-          <input type="number" id="${participante}_recorrido" name="${participante}_recorrido" min="0" max="1000" step="25" required>
+          <label for="field${index}_recorrido">Recorrido (0 a 1000)</label>
+          <input type="number" id="field${index}_recorrido" name="${escapeHtml(participante)}_recorrido" min="0" max="1000" step="25" required>
         </div>
         <div class="field-row checkbox-row">
-          <input type="checkbox" id="${participante}_viajeCompleto" name="${participante}_viajeCompleto">
-          <label for="${participante}_viajeCompleto">Viaje completo</label>
+          <input type="checkbox" id="field${index}_viajeCompleto" name="${escapeHtml(participante)}_viajeCompleto">
+          <label for="field${index}_viajeCompleto">Viaje completo</label>
         </div>
         <div class="field-row checkbox-row">
-          <input type="checkbox" id="${participante}_tk" name="${participante}_tk">
-          <label for="${participante}_tk">TK</label>
+          <input type="checkbox" id="field${index}_tk" name="${escapeHtml(participante)}_tk">
+          <label for="field${index}_tk">TK</label>
         </div>
         <div class="field-row">
-          <label for="${participante}_seguridades">Seguridades</label>
-          <input type="number" id="${participante}_seguridades" name="${participante}_seguridades" min="0" max="4" value="0">
+          <label for="field${index}_seguridades">Seguridades</label>
+          <input type="number" id="field${index}_seguridades" name="${escapeHtml(participante)}_seguridades" min="0" max="4" value="0">
         </div>
         <div class="field-row checkbox-row">
-          <input type="checkbox" id="${participante}_bonus4seguridades" name="${participante}_bonus4seguridades">
-          <label for="${participante}_bonus4seguridades">4 seguridades</label>
+          <input type="checkbox" id="field${index}_bonus4seguridades" name="${escapeHtml(participante)}_bonus4seguridades">
+          <label for="field${index}_bonus4seguridades">4 seguridades</label>
         </div>
         <div class="field-row checkbox-row">
-          <input type="checkbox" id="${participante}_viajeSeguro" name="${participante}_viajeSeguro">
-          <label for="${participante}_viajeSeguro">Viaje seguro</label>
+          <input type="checkbox" id="field${index}_viajeSeguro" name="${escapeHtml(participante)}_viajeSeguro">
+          <label for="field${index}_viajeSeguro">Viaje seguro</label>
         </div>
         <div class="field-row checkbox-row">
-          <input type="checkbox" id="${participante}_bloqueo" name="${participante}_bloqueo">
-          <label for="${participante}_bloqueo">Bloqueo</label>
+          <input type="checkbox" id="field${index}_bloqueo" name="${escapeHtml(participante)}_bloqueo">
+          <label for="field${index}_bloqueo">Bloqueo</label>
         </div>
         <div class="field-row checkbox-row">
-          <input type="checkbox" id="${participante}_accionDemorada" name="${participante}_accionDemorada">
-          <label for="${participante}_accionDemorada">Acción demorada</label>
+          <input type="checkbox" id="field${index}_accionDemorada" name="${escapeHtml(participante)}_accionDemorada">
+          <label for="field${index}_accionDemorada">Acción demorada</label>
         </div>
         <div class="field-row checkbox-row">
-          <input type="checkbox" id="${participante}_alargue" name="${participante}_alargue">
-          <label for="${participante}_alargue">Alargue</label>
+          <input type="checkbox" id="field${index}_alargue" name="${escapeHtml(participante)}_alargue">
+          <label for="field${index}_alargue">Alargue</label>
         </div>
       `;
       targetEl.appendChild(card);
@@ -259,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderParticipantesInputs() {
       const modo = modoJuego.value;
-      const cantidad = modo === 'equipos' ? 2 : 3;
+      const cantidad = Number(document.getElementById('cantidadParticipantes').value);
       camposJugadores.innerHTML = '';
 
       for (let index = 1; index <= cantidad; index += 1) {
@@ -288,14 +242,14 @@ document.addEventListener('DOMContentLoaded', () => {
         partidosActivos.innerHTML = activas.length
           ? activas
               .sort((a, b) => new Date(b.fechaCreacion) - new Date(a.fechaCreacion))
-              .map((partida) => `<li><a href="partida.html?id=${partida.id}">${partida.nombre}</a></li>`)
+              .map((partida) => `<li><a href="partida.html?id=${encodeURIComponent(partida.id)}">${escapeHtml(partida.nombre)}</a></li>`)
               .join('')
           : '<li class="empty-state">No hay partidas activas.</li>';
 
         partidasFinalizadas.innerHTML = finalizadas.length
           ? finalizadas
               .sort((a, b) => new Date(b.fechaCreacion) - new Date(a.fechaCreacion))
-              .map((partida) => `<li><a href="partida.html?id=${partida.id}">${partida.nombre}</a></li>`)
+              .map((partida) => `<li><a href="partida.html?id=${encodeURIComponent(partida.id)}">${escapeHtml(partida.nombre)}</a></li>`)
               .join('')
           : '<li class="empty-state">No hay partidas finalizadas.</li>';
 
@@ -308,16 +262,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     modoJuego.addEventListener('change', renderParticipantesInputs);
+    document.getElementById('cantidadParticipantes').addEventListener('change', renderParticipantesInputs);
 
     formNuevaPartida.addEventListener('submit', async (event) => {
       event.preventDefault();
+      if(!await ensureSession())return;
 
       const nombrePartida = document.getElementById('nombrePartida').value.trim();
       const participantes = Array.from(camposJugadores.querySelectorAll('input'))
         .map((input) => input.value.trim())
         .filter(Boolean);
 
-      if (!nombrePartida || participantes.length === 0) {
+      if (!nombrePartida || participantes.length !== Number(document.getElementById('cantidadParticipantes').value) || new Set(participantes.map(x=>x.toLowerCase())).size!==participantes.length) {
         alert('Completa el nombre de la partida y todos los participantes.');
         return;
       }
@@ -351,14 +307,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     renderParticipantesInputs();
-    cargarPartidas();
+    ensureSession().then(ok=>{if(ok)cargarPartidas();else formNuevaPartida.querySelector('button[type="submit"]').disabled=true;}).catch(error=>alert(error.message));
   }
 
   if (document.body.dataset.page === 'partida') {
-    if (!checkLogin()) {
-      return;
-    }
-
     const urlParams = new URLSearchParams(window.location.search);
     const partidaId = urlParams.get('id');
 
@@ -402,11 +354,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (!response.ok) {
-          throw new Error('Error al guardar la partida');
+          const body=await response.json().catch(()=>({}));
+          throw new Error(body.error||'Error al guardar la partida');
         }
       } catch (error) {
         console.error(error);
-        alert('No se pudo guardar la mano. Verifica el servidor.');
+        alert(error.message || 'No se pudo guardar la mano. Verifica el servidor.');
+        throw error;
       }
     }
 
@@ -422,6 +376,54 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    function renderHistory(partida) {
+      const el=document.getElementById('historialManos');el.textContent='';
+      partida.manos.forEach((mano,index)=>{
+        const row=document.createElement('div');row.className='history-row';
+        const title=document.createElement('span');title.textContent='Mano '+(index+1)+' · '+partida.participantes.map(n=>n+': '+(mano[n+'_puntos']||0)+' pts').join(' · ');
+        const edit=document.createElement('button');edit.type='button';edit.textContent='Editar';edit.disabled=false;edit.onclick=()=>editHand(partida,index);
+        const remove=document.createElement('button');remove.type='button';remove.textContent='Anular';remove.disabled=false;remove.onclick=()=>removeHand(partida,index);
+        row.append(title,edit,remove);el.appendChild(row);
+      });if(!partida.manos.length)el.textContent='Todavía no hay manos cargadas.';
+    }
+    async function persistHistory(partida){
+      const winners=GAME.winner(partida);partida.finalizada=winners.length>0;partida.ganador=winners.join(' / ')||null;
+      await guardarPartida(partida);window.location.reload();
+    }
+    async function removeHand(partida,index){
+      if(!confirm('¿Anular la mano '+(index+1)+'?'))return;
+      partida.manos.splice(index,1);try{await persistHistory(partida);}catch(e){}
+    }
+    async function editHand(partida,index){
+      const old=partida.manos[index];
+      const form=document.getElementById('formMano');
+      const fields=document.getElementById('formJugadores');
+      const button=form.querySelector('[type="submit"]');
+      const cancel=document.getElementById('cancelarEdicion');
+      partida.participantes.forEach(name=>{
+        const card=Array.from(fields.querySelectorAll('.player-card')).find(c=>c.dataset.participante===name);
+        if(!card)return;
+        card.querySelectorAll('[name]').forEach(input=>{
+          const value=old[input.name];
+          if(input.type==='checkbox')input.checked=GAME.bool(value);
+          else input.value=value===undefined?0:value;
+        });
+      });
+      form.dataset.editIndex=String(index);
+      button.textContent='Guardar cambios';
+      cancel.hidden=false;
+      document.getElementById('agregarManoCard').style.display='block';
+      form.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+    function cancelEdit(){
+      const form=document.getElementById('formMano');
+      delete form.dataset.editIndex;
+      form.reset();
+      form.querySelector('[type="submit"]').textContent='Guardar mano';
+      document.getElementById('cancelarEdicion').hidden=true;
+      if(document.getElementById('mensajeFinalizada').style.display==='block')document.getElementById('agregarManoCard').style.display='none';
+    }
+    document.getElementById('cancelarEdicion').addEventListener('click',cancelEdit);
     async function cargarPartida() {
       const partida = await obtenerPartida();
       if (!partida) {
@@ -433,6 +435,7 @@ document.addEventListener('DOMContentLoaded', () => {
       tituloPartida.textContent = `Partida: ${partida.nombre}`;
       subtituloPartida.textContent = `${partida.modo} · ${partida.participantes.join(' vs ')}`;
       renderParticipantFields(partida.participantes, formJugadores);
+      renderHistory(partida);
 
       const ganador = renderSummary(partida, tablaResumen);
       if (partida.finalizada || ganador) {
@@ -442,7 +445,7 @@ document.addEventListener('DOMContentLoaded', () => {
       formPartida.addEventListener('submit', async (event) => {
         event.preventDefault();
 
-        if (partida.finalizada) {
+        if (partida.finalizada && event.target.dataset.editIndex===undefined) {
           alert('Esta partida ya está finalizada.');
           return;
         }
@@ -453,7 +456,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         partida.participantes.forEach((participante) => {
           const recorrido = toNumber(formData.get(`${participante}_recorrido`), 0);
-          if (recorrido < 0 || recorrido > GAME_RULES.maxRecorrido || recorrido % 25 !== 0) {
+          const seguridades = toNumber(formData.get(`${participante}_seguridades`), 0);
+          if (recorrido < 0 || recorrido > GAME_RULES.maxRecorrido || recorrido % 25 !== 0 || seguridades < 0 || seguridades > 4 || (seguridades !== 4 && formData.has(`${participante}_bonus4seguridades`)) || (recorrido !== 1000 && formData.has(`${participante}_viajeCompleto`))) {
             invalidos.push(participante);
           }
 
@@ -466,7 +470,7 @@ document.addEventListener('DOMContentLoaded', () => {
           nuevaMano[`${participante}_bloqueo`] = parseBoolean(formData.get(`${participante}_bloqueo`));
           nuevaMano[`${participante}_accionDemorada`] = parseBoolean(formData.get(`${participante}_accionDemorada`));
           nuevaMano[`${participante}_alargue`] = parseBoolean(formData.get(`${participante}_alargue`));
-          nuevaMano[`${participante}_puntos`] = scoreParticipantHand(participante, nuevaMano);
+          
         });
 
         if (invalidos.length > 0) {
@@ -474,21 +478,30 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
-        partida.manos.push(nuevaMano);
+        try { Object.assign(nuevaMano, GAME.hand(partida.participantes, nuevaMano, true)); }
+        catch (error) { alert(error.message); return; }
+        const editIndex=event.target.dataset.editIndex;
+        if(editIndex!==undefined)partida.manos[Number(editIndex)]=nuevaMano;
+        else partida.manos.push(nuevaMano);
 
         const totals = getTotales(partida);
-        const ganador = Object.entries(totals).find(([, puntos]) => puntos >= GAME_RULES.ganadorMeta)?.[0] ?? null;
+        const maxPuntos = Math.max(...Object.values(totals), 0);
+        const ganador = maxPuntos >= GAME_RULES.ganadorMeta ? Object.entries(totals).filter(([, puntos]) => puntos === maxPuntos).map(([nombre]) => nombre).join(' / ') : null;
         if (ganador) {
           partida.finalizada = true;
           partida.ganador = ganador;
         }
 
-        await guardarPartida(partida);
+        try {
+          await guardarPartida(partida);
+        } catch (error) {
+          return;
+        }
         alert(ganador ? `🎉 ¡Felicidades! El ganador es: ${ganador} 🏆` : 'Mano agregada exitosamente.');
         window.location.reload();
       });
     }
 
-    cargarPartida();
+    ensureSession().then(ok=>{if(ok)cargarPartida();else formPartida.style.display='none';}).catch(error=>alert(error.message));
   }
 });

@@ -370,3 +370,14 @@ h1 {
     padding: 18px;
   }
 }
+
+/* Hand history and compact action controls */
+.history-panel { padding: 20px; }
+.history-row { display:flex; flex-wrap:wrap; align-items:center; gap:10px; padding:12px 0; border-bottom:1px solid var(--border); }
+.history-row span { flex:1 1 250px; line-height:1.5; }
+.history-row button { padding:9px 14px; border:1px solid var(--border); background:white; color:var(--accent); border-radius:10px; cursor:pointer; font:inherit; }
+.history-row button:hover:not(:disabled) { background:var(--bg-strong); }
+.history-row button:disabled { opacity:.45; cursor:not-allowed; }
+.primary-button:disabled { opacity:.55; cursor:not-allowed; }
+:focus-visible { outline:3px solid var(--primary); outline-offset:2px; }
+@media(max-width:600px){.history-row button{flex:1 1 auto}.history-row span{flex-basis:100%}}

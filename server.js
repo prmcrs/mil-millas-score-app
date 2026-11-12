@@ -1,13 +1,26 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
+const GAME = require('./score');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'partidas', 'partidas.json');
 
-app.use(express.static(path.join(__dirname)));
-app.use(express.json());
+app.use((req,res,next)=>{if(req.path.startsWith('/api/'))return next();const allowed=['/','/index.html','/partida.html','/style.css','/app.js','/score.js'];if(allowed.includes(req.path)||req.path.startsWith('/images/'))return next();return res.status(404).end();});
+app.use(express.static(path.join(__dirname), { dotfiles: 'deny', index: false }));
+app.use(express.json({limit:'256kb'}));
+const APP_PASSWORD=process.env.APP_PASSWORD;
+if(!APP_PASSWORD){console.error('Configurá APP_PASSWORD antes de iniciar Mil Millas Score.');process.exit(1);}
+const sessions=new Map();
+function cookie(req,name){const part=(req.headers.cookie||'').split(';').map(v=>v.trim()).find(v=>v.startsWith(name+'='));return part?part.slice(name.length+1):'';}
+function authorized(req){const token=cookie(req,'mm_session');const expires=sessions.get(token);if(!expires)return false;if(expires<Date.now()){sessions.delete(token);return false;}return true;}
+app.post('/api/login',(req,res)=>{const given=typeof req.body.password==='string'?req.body.password:'';const a=Buffer.from(given),b=Buffer.from(APP_PASSWORD);if(a.length!==b.length||!crypto.timingSafeEqual(a,b))return res.status(401).json({error:'Contraseña incorrecta'});const token=crypto.randomBytes(32).toString('hex');sessions.set(token,Date.now()+12*60*60*1000);res.setHeader('Set-Cookie',`mm_session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=43200${req.secure?'; Secure':''}`);res.json({ok:true});});
+app.post('/api/logout',(req,res)=>{sessions.delete(cookie(req,'mm_session'));res.setHeader('Set-Cookie','mm_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');res.json({ok:true});});
+app.get('/api/session',(req,res)=>res.json({authenticated:authorized(req),required:true}));
+app.use('/api/partidas',(req,res,next)=>authorized(req)?next():res.status(401).json({error:'Iniciá sesión para continuar'}));
+app.use('/api/partidas',(req,res,next)=>{if(!['GET','HEAD'].includes(req.method)&&req.headers.origin){try{const origin=new URL(req.headers.origin),host=req.headers.host;if(origin.host!==host)return res.status(403).json({error:'Origen no autorizado'});}catch(e){return res.status(403).json({error:'Origen no autorizado'});}}next();});
 
 if (!fs.existsSync(DATA_FILE)) {
   fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
@@ -101,7 +114,9 @@ function readPartidas() {
 function writePartidas(partidas) {
   try {
     const datos = partidas.map(normalizeParticipantes).filter(Boolean);
-    fs.writeFileSync(DATA_FILE, JSON.stringify(datos, null, 2));
+    const tempFile = `${DATA_FILE}.tmp`;
+    fs.writeFileSync(tempFile, JSON.stringify(datos, null, 2));
+    fs.renameSync(tempFile, DATA_FILE);
   } catch (error) {
     console.error('Error al escribir en el archivo de datos:', error.message);
     throw new Error('No se pudo guardar en el archivo de datos. Verifica los permisos.');
@@ -139,11 +154,19 @@ app.post('/api/partidas', (req, res) => {
   try {
     const partidas = readPartidas();
     const nuevaPartida = normalizeParticipantes(req.body);
+    if(nuevaPartida && (!Array.isArray(nuevaPartida.manos)||nuevaPartida.manos.length!==0))return res.status(400).json({error:'La partida nueva no puede incluir manos'});
 
     if (!nuevaPartida || !nuevaPartida.id || !nuevaPartida.nombre || !Array.isArray(nuevaPartida.participantes) || nuevaPartida.participantes.length === 0) {
       return res.status(400).json({ error: 'Datos de partida incompletos' });
     }
 
+    if (partidas.some((p) => String(p.id) === String(nuevaPartida.id))) {
+      return res.status(409).json({ error: 'Ya existe una partida con ese ID' });
+    }
+    if (nuevaPartida.participantes.length < 2 || nuevaPartida.participantes.length > 6 || nuevaPartida.participantes.some(n=>typeof n!=='string'||!n.trim()||n.length>60) || new Set(nuevaPartida.participantes.map((n) => String(n).trim().toLowerCase())).size !== nuevaPartida.participantes.length) {
+      return res.status(400).json({ error: 'Se requieren entre 2 y 6 participantes con nombres distintos' });
+    }
+    nuevaPartida.version=1;
     partidas.push(nuevaPartida);
     writePartidas(partidas);
 
@@ -164,10 +187,23 @@ app.put('/api/partidas/:id', (req, res) => {
       return res.status(404).json({ error: 'Partida no encontrada' });
     }
 
+    if (!partidaActualizada || String(partidaActualizada.id) !== String(id) || !Array.isArray(partidaActualizada.participantes) || !Array.isArray(partidaActualizada.manos)) {
+      return res.status(400).json({ error: 'Datos de partida inválidos' });
+    }
+    if (Number(req.body.version||0)!==Number(partidas[index].version||0)) return res.status(409).json({error:'La partida cambió en otra sesión. Recargá antes de guardar.'});
+    if (partidaActualizada.modo!==partidas[index].modo || partidaActualizada.nombre!==partidas[index].nombre) return res.status(400).json({error:'No se pueden cambiar los datos principales de la partida'});
+    if (partidaActualizada.participantes.join('\u0000') !== partidas[index].participantes.join('\u0000')) return res.status(400).json({error:'No se pueden cambiar participantes existentes'});
+    if (partidaActualizada.manos.length > 500) return res.status(400).json({error:'Demasiadas manos'});
+    try { partidaActualizada.manos = partidaActualizada.manos.map(m=>GAME.hand(partidaActualizada.participantes,m,true)); }
+    catch(error){return res.status(400).json({error:error.message});}
+    const winners=GAME.winner(partidaActualizada);
+    partidaActualizada.finalizada=winners.length>0;
+    partidaActualizada.ganador=winners.join(' / ')||null;
+    partidaActualizada.version=Number(partidas[index].version||0)+1;
     partidas[index] = partidaActualizada;
     writePartidas(partidas);
 
-    res.send('Partida actualizada');
+    res.json(partidaActualizada);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
