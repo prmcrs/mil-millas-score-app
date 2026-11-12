@@ -52,13 +52,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const recorrido = Number(manoNormalizada[recorridoKey] ?? 0);
         const seguridades = Number(manoNormalizada[seguridadesKey] ?? 0);
-        const viajeCompleto = Boolean(manoNormalizada[viajeCompletoKey]);
-        const tk = Boolean(manoNormalizada[tkKey]);
-        const bonus4 = Boolean(manoNormalizada[bonusKey]);
-        const viajeSeguro = Boolean(manoNormalizada[viajeSeguroKey]);
-        const bloqueo = Boolean(manoNormalizada[bloqueoKey]);
-        const accionDemorada = Boolean(manoNormalizada[accionDemoradaKey]);
-        const alargue = Boolean(manoNormalizada[alargueKey]);
+        const viajeCompleto = parseBoolean(manoNormalizada[viajeCompletoKey]);
+        const tk = parseBoolean(manoNormalizada[tkKey]);
+        const bonus4 = parseBoolean(manoNormalizada[bonusKey]);
+        const viajeSeguro = parseBoolean(manoNormalizada[viajeSeguroKey]);
+        const bloqueo = parseBoolean(manoNormalizada[bloqueoKey]);
+        const accionDemorada = parseBoolean(manoNormalizada[accionDemoradaKey]);
+        const alargue = parseBoolean(manoNormalizada[alargueKey]);
 
         const puntos =
           recorrido +
@@ -102,30 +102,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return value === 'true' || value === 'on' || value === 'yes';
     }
     return Boolean(value);
-  }
-
-  function scoreParticipantHand(participante, data) {
-    const recorrido = toNumber(data[`${participante}_recorrido`], 0);
-    const viajeCompleto = parseBoolean(data[`${participante}_viajeCompleto`]);
-    const tk = parseBoolean(data[`${participante}_tk`]);
-    const seguridades = toNumber(data[`${participante}_seguridades`], 0);
-    const bonus4 = parseBoolean(data[`${participante}_bonus4seguridades`]);
-    const viajeSeguro = parseBoolean(data[`${participante}_viajeSeguro`]);
-    const bloqueo = parseBoolean(data[`${participante}_bloqueo`]);
-    const accionDemorada = parseBoolean(data[`${participante}_accionDemorada`]);
-    const alargue = parseBoolean(data[`${participante}_alargue`]);
-
-    return (
-      recorrido +
-      (viajeCompleto ? GAME_RULES.premios.viajeCompleto : 0) +
-      (tk ? GAME_RULES.premios.tk : 0) +
-      seguridades * GAME_RULES.premios.seguridad +
-      (bonus4 ? GAME_RULES.premios.bonusCuatroSeguridades : 0) +
-      (viajeSeguro ? GAME_RULES.premios.viajeSeguro : 0) +
-      (bloqueo ? GAME_RULES.premios.bloqueo : 0) +
-      (accionDemorada ? GAME_RULES.premios.accionDemorada : 0) +
-      (alargue ? GAME_RULES.premios.alargue : 0)
-    );
   }
 
   function getTotales(partida) {
@@ -180,38 +156,38 @@ document.addEventListener('DOMContentLoaded', () => {
         <h3>${escapeHtml(participante)}</h3>
         <div class="field-row">
           <label for="field${index}_recorrido">Recorrido (0 a 1000)</label>
-          <input type="number" id="field${index}_recorrido" name="${participante}_recorrido" min="0" max="1000" step="25" required>
+          <input type="number" id="field${index}_recorrido" name="${escapeHtml(participante)}_recorrido" min="0" max="1000" step="25" required>
         </div>
         <div class="field-row checkbox-row">
-          <input type="checkbox" id="field${index}_viajeCompleto" name="${participante}_viajeCompleto">
+          <input type="checkbox" id="field${index}_viajeCompleto" name="${escapeHtml(participante)}_viajeCompleto">
           <label for="field${index}_viajeCompleto">Viaje completo</label>
         </div>
         <div class="field-row checkbox-row">
-          <input type="checkbox" id="field${index}_tk" name="${participante}_tk">
+          <input type="checkbox" id="field${index}_tk" name="${escapeHtml(participante)}_tk">
           <label for="field${index}_tk">TK</label>
         </div>
         <div class="field-row">
           <label for="field${index}_seguridades">Seguridades</label>
-          <input type="number" id="field${index}_seguridades" name="${participante}_seguridades" min="0" max="4" value="0">
+          <input type="number" id="field${index}_seguridades" name="${escapeHtml(participante)}_seguridades" min="0" max="4" value="0">
         </div>
         <div class="field-row checkbox-row">
-          <input type="checkbox" id="field${index}_bonus4seguridades" name="${participante}_bonus4seguridades">
+          <input type="checkbox" id="field${index}_bonus4seguridades" name="${escapeHtml(participante)}_bonus4seguridades">
           <label for="field${index}_bonus4seguridades">4 seguridades</label>
         </div>
         <div class="field-row checkbox-row">
-          <input type="checkbox" id="field${index}_viajeSeguro" name="${participante}_viajeSeguro">
+          <input type="checkbox" id="field${index}_viajeSeguro" name="${escapeHtml(participante)}_viajeSeguro">
           <label for="field${index}_viajeSeguro">Viaje seguro</label>
         </div>
         <div class="field-row checkbox-row">
-          <input type="checkbox" id="field${index}_bloqueo" name="${participante}_bloqueo">
+          <input type="checkbox" id="field${index}_bloqueo" name="${escapeHtml(participante)}_bloqueo">
           <label for="field${index}_bloqueo">Bloqueo</label>
         </div>
         <div class="field-row checkbox-row">
-          <input type="checkbox" id="field${index}_accionDemorada" name="${participante}_accionDemorada">
+          <input type="checkbox" id="field${index}_accionDemorada" name="${escapeHtml(participante)}_accionDemorada">
           <label for="field${index}_accionDemorada">Acción demorada</label>
         </div>
         <div class="field-row checkbox-row">
-          <input type="checkbox" id="field${index}_alargue" name="${participante}_alargue">
+          <input type="checkbox" id="field${index}_alargue" name="${escapeHtml(participante)}_alargue">
           <label for="field${index}_alargue">Alargue</label>
         </div>
       `;
@@ -486,7 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
           nuevaMano[`${participante}_bloqueo`] = parseBoolean(formData.get(`${participante}_bloqueo`));
           nuevaMano[`${participante}_accionDemorada`] = parseBoolean(formData.get(`${participante}_accionDemorada`));
           nuevaMano[`${participante}_alargue`] = parseBoolean(formData.get(`${participante}_alargue`));
-          nuevaMano[`${participante}_puntos`] = scoreParticipantHand(participante, nuevaMano);
+          
         });
 
         if (invalidos.length > 0) {
