@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const alargueKey = `${participante}_alargue`;
 
         const recorrido = Number(manoNormalizada[recorridoKey] ?? 0);
-        const seguridades = Number(manoNormalizada[segurosKey] ?? 0);
+        const seguridades = Number(manoNormalizada[seguridadesKey] ?? 0);
         const viajeCompleto = Boolean(manoNormalizada[viajeCompletoKey]);
         const tk = Boolean(manoNormalizada[tkKey]);
         const bonus4 = Boolean(manoNormalizada[bonusKey]);
@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
           (alargue ? GAME_RULES.premios.alargue : 0);
 
         manoNormalizada[recorridoKey] = recorrido;
-        manoNormalizada[segurosKey] = seguridades;
+        manoNormalizada[seguridadesKey] = seguridades;
         manoNormalizada[viajeCompletoKey] = viajeCompleto;
         manoNormalizada[tkKey] = tk;
         manoNormalizada[bonusKey] = bonus4;
@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderSummary(partida, summaryEl) {
     const totales = getTotales(partida);
     const maxPuntos = Math.max(...Object.values(totales), 0);
-    const ganador = Object.entries(totales).find(([, puntos]) => puntos >= GAME_RULES.ganadorMeta)?.[0] ?? null;
+    const ganador = maxPuntos >= GAME_RULES.ganadorMeta ? Object.entries(totales).filter(([, puntos]) => puntos === maxPuntos).map(([nombre]) => nombre).join(' / ') : null;
 
     const rows = partida.participantes
       .map((participante) => `<tr><td><strong>${participante}</strong></td><td>${totales[participante]} pts</td></tr>`)
@@ -407,6 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (error) {
         console.error(error);
         alert('No se pudo guardar la mano. Verifica el servidor.');
+        throw error;
       }
     }
 
@@ -453,7 +454,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         partida.participantes.forEach((participante) => {
           const recorrido = toNumber(formData.get(`${participante}_recorrido`), 0);
-          if (recorrido < 0 || recorrido > GAME_RULES.maxRecorrido || recorrido % 25 !== 0) {
+          const seguridades = toNumber(formData.get(`${participante}_seguridades`), 0);
+          if (recorrido < 0 || recorrido > GAME_RULES.maxRecorrido || recorrido % 25 !== 0 || seguridades < 0 || seguridades > 4 || (seguridades !== 4 && formData.has(`${participante}_bonus4seguridades`)) || (recorrido !== 1000 && formData.has(`${participante}_viajeCompleto`))) {
             invalidos.push(participante);
           }
 
@@ -477,13 +479,18 @@ document.addEventListener('DOMContentLoaded', () => {
         partida.manos.push(nuevaMano);
 
         const totals = getTotales(partida);
-        const ganador = Object.entries(totals).find(([, puntos]) => puntos >= GAME_RULES.ganadorMeta)?.[0] ?? null;
+        const maxPuntos = Math.max(...Object.values(totals), 0);
+        const ganador = maxPuntos >= GAME_RULES.ganadorMeta ? Object.entries(totals).filter(([, puntos]) => puntos === maxPuntos).map(([nombre]) => nombre).join(' / ') : null;
         if (ganador) {
           partida.finalizada = true;
           partida.ganador = ganador;
         }
 
-        await guardarPartida(partida);
+        try {
+          await guardarPartida(partida);
+        } catch (error) {
+          return;
+        }
         alert(ganador ? `🎉 ¡Felicidades! El ganador es: ${ganador} 🏆` : 'Mano agregada exitosamente.');
         window.location.reload();
       });
