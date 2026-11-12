@@ -370,11 +370,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (!response.ok) {
-          throw new Error('Error al guardar la partida');
+          const body=await response.json().catch(()=>({}));
+          throw new Error(body.error||'Error al guardar la partida');
         }
       } catch (error) {
         console.error(error);
-        alert('No se pudo guardar la mano. Verifica el servidor.');
+        alert(error.message || 'No se pudo guardar la mano. Verifica el servidor.');
         throw error;
       }
     }
@@ -396,8 +397,8 @@ document.addEventListener('DOMContentLoaded', () => {
       partida.manos.forEach((mano,index)=>{
         const row=document.createElement('div');row.className='history-row';
         const title=document.createElement('span');title.textContent='Mano '+(index+1)+' · '+partida.participantes.map(n=>n+': '+(mano[n+'_puntos']||0)+' pts').join(' · ');
-        const edit=document.createElement('button');edit.type='button';edit.textContent='Editar';edit.disabled=partida.finalizada;edit.onclick=()=>editHand(partida,index);
-        const remove=document.createElement('button');remove.type='button';remove.textContent='Anular';remove.disabled=partida.finalizada;remove.onclick=()=>removeHand(partida,index);
+        const edit=document.createElement('button');edit.type='button';edit.textContent='Editar';edit.disabled=false;edit.onclick=()=>editHand(partida,index);
+        const remove=document.createElement('button');remove.type='button';remove.textContent='Anular';remove.disabled=false;remove.onclick=()=>removeHand(partida,index);
         row.append(title,edit,remove);el.appendChild(row);
       });if(!partida.manos.length)el.textContent='Todavía no hay manos cargadas.';
     }
@@ -427,6 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
       form.dataset.editIndex=String(index);
       button.textContent='Guardar cambios';
       cancel.hidden=false;
+      document.getElementById('agregarManoCard').style.display='block';
       form.scrollIntoView({behavior:'smooth',block:'start'});
     }
     function cancelEdit(){
@@ -435,6 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
       form.reset();
       form.querySelector('[type="submit"]').textContent='Guardar mano';
       document.getElementById('cancelarEdicion').hidden=true;
+      if(document.getElementById('mensajeFinalizada').style.display==='block')document.getElementById('agregarManoCard').style.display='none';
     }
     document.getElementById('cancelarEdicion').addEventListener('click',cancelEdit);
     async function cargarPartida() {
@@ -458,7 +461,7 @@ document.addEventListener('DOMContentLoaded', () => {
       formPartida.addEventListener('submit', async (event) => {
         event.preventDefault();
 
-        if (partida.finalizada) {
+        if (partida.finalizada && event.target.dataset.editIndex===undefined) {
           alert('Esta partida ya está finalizada.');
           return;
         }
