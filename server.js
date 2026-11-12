@@ -12,12 +12,13 @@ app.use((req,res,next)=>{if(req.path.startsWith('/api/'))return next();const all
 app.use(express.static(path.join(__dirname), { dotfiles: 'deny', index: false }));
 app.use(express.json({limit:'256kb'}));
 const APP_PASSWORD=process.env.APP_PASSWORD;
+if(!APP_PASSWORD){console.error('Configurá APP_PASSWORD antes de iniciar Mil Millas Score.');process.exit(1);}
 const sessions=new Map();
 function cookie(req,name){const part=(req.headers.cookie||'').split(';').map(v=>v.trim()).find(v=>v.startsWith(name+'='));return part?part.slice(name.length+1):'';}
-function authorized(req){if(!APP_PASSWORD)return true;const token=cookie(req,'mm_session');const expires=sessions.get(token);if(!expires)return false;if(expires<Date.now()){sessions.delete(token);return false;}return true;}
-app.post('/api/login',(req,res)=>{if(!APP_PASSWORD)return res.json({ok:true});const given=typeof req.body.password==='string'?req.body.password:'';const a=Buffer.from(given),b=Buffer.from(APP_PASSWORD);if(a.length!==b.length||!crypto.timingSafeEqual(a,b))return res.status(401).json({error:'Contraseña incorrecta'});const token=crypto.randomBytes(32).toString('hex');sessions.set(token,Date.now()+12*60*60*1000);res.setHeader('Set-Cookie',`mm_session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=43200${req.secure?'; Secure':''}`);res.json({ok:true});});
+function authorized(req){const token=cookie(req,'mm_session');const expires=sessions.get(token);if(!expires)return false;if(expires<Date.now()){sessions.delete(token);return false;}return true;}
+app.post('/api/login',(req,res)=>{const given=typeof req.body.password==='string'?req.body.password:'';const a=Buffer.from(given),b=Buffer.from(APP_PASSWORD);if(a.length!==b.length||!crypto.timingSafeEqual(a,b))return res.status(401).json({error:'Contraseña incorrecta'});const token=crypto.randomBytes(32).toString('hex');sessions.set(token,Date.now()+12*60*60*1000);res.setHeader('Set-Cookie',`mm_session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=43200${req.secure?'; Secure':''}`);res.json({ok:true});});
 app.post('/api/logout',(req,res)=>{sessions.delete(cookie(req,'mm_session'));res.setHeader('Set-Cookie','mm_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');res.json({ok:true});});
-app.get('/api/session',(req,res)=>res.json({authenticated:authorized(req),required:!!APP_PASSWORD}));
+app.get('/api/session',(req,res)=>res.json({authenticated:authorized(req),required:true}));
 app.use('/api/partidas',(req,res,next)=>authorized(req)?next():res.status(401).json({error:'Iniciá sesión para continuar'}));
 app.use('/api/partidas',(req,res,next)=>{if(!['GET','HEAD'].includes(req.method)&&req.headers.origin){try{const origin=new URL(req.headers.origin),host=req.headers.host;if(origin.host!==host)return res.status(403).json({error:'Origen no autorizado'});}catch(e){return res.status(403).json({error:'Origen no autorizado'});}}next();});
 
