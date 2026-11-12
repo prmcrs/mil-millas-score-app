@@ -117,3 +117,21 @@ MIT
 4. Revisar la autenticación antes de publicar la aplicación en Internet: **la API todavía no tiene control de acceso**. No exponerla públicamente hasta implementar una sesión autenticada en el backend.
 5. Verificar los checks de GitHub Actions y realizar una prueba manual del frontend antes de fusionar.
 
+
+### Autenticación (obligatoria)
+El servidor **no inicia** si no configurás `APP_PASSWORD`. No hay contraseña incluida en el repositorio.
+
+Linux/macOS:
+```bash
+APP_PASSWORD='elegi-una-clave-larga-y-unica' npm start
+```
+
+PowerShell:
+```powershell
+$env:APP_PASSWORD = 'elegi-una-clave-larga-y-unica'
+npm start
+```
+
+Las sesiones se guardan en memoria, duran 12 horas y se invalidan al reiniciar el servidor. En producción, publicar únicamente detrás de HTTPS (reverse proxy con TLS). Las cookies son HttpOnly y SameSite=Strict; la opción Secure se activa cuando Express detecta una conexión HTTPS directa. Si usás un reverse proxy que termina TLS, configurar correctamente `trust proxy` y verificar las cookies antes del despliegue.
+
+**Limitaciones actuales:** no hay rate limiting de intentos de login, persistencia de sesiones ni pruebas E2E de autenticación. No hacer merge ni exponer la API a Internet sin revisar esos puntos.
