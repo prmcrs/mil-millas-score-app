@@ -1,5 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
   const GAME = window.MilMillas;
+  async function ensureSession(){
+    let response=await fetch('/api/session');if(!response.ok)throw Error('No se pudo verificar la sesión');
+    let state=await response.json();if(state.authenticated)return true;
+    const password=prompt('Contraseña de Mil Millas:');if(password===null)return false;
+    response=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password})});
+    if(!response.ok){alert('Contraseña incorrecta');return false;}return true;
+  }
   const escapeHtml = (v) => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const GAME_RULES = {
     maxRecorrido: 1000,
@@ -259,6 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     formNuevaPartida.addEventListener('submit', async (event) => {
       event.preventDefault();
+      if(!await ensureSession())return;
 
       const nombrePartida = document.getElementById('nombrePartida').value.trim();
       const participantes = Array.from(camposJugadores.querySelectorAll('input'))
@@ -299,7 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     renderParticipantesInputs();
-    cargarPartidas();
+    ensureSession().then(ok=>{if(ok)cargarPartidas();else formNuevaPartida.querySelector('button[type="submit"]').disabled=true;}).catch(error=>alert(error.message));
   }
 
   if (document.body.dataset.page === 'partida') {
@@ -494,6 +502,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    cargarPartida();
+    ensureSession().then(ok=>{if(ok)cargarPartida();else formPartida.style.display='none';}).catch(error=>alert(error.message));
   }
 });
