@@ -101,7 +101,9 @@ function readPartidas() {
 function writePartidas(partidas) {
   try {
     const datos = partidas.map(normalizeParticipantes).filter(Boolean);
-    fs.writeFileSync(DATA_FILE, JSON.stringify(datos, null, 2));
+    const tempFile = `${DATA_FILE}.tmp`;
+    fs.writeFileSync(tempFile, JSON.stringify(datos, null, 2));
+    fs.renameSync(tempFile, DATA_FILE);
   } catch (error) {
     console.error('Error al escribir en el archivo de datos:', error.message);
     throw new Error('No se pudo guardar en el archivo de datos. Verifica los permisos.');
@@ -144,6 +146,12 @@ app.post('/api/partidas', (req, res) => {
       return res.status(400).json({ error: 'Datos de partida incompletos' });
     }
 
+    if (partidas.some((p) => String(p.id) === String(nuevaPartida.id))) {
+      return res.status(409).json({ error: 'Ya existe una partida con ese ID' });
+    }
+    if (nuevaPartida.participantes.length < 2 || nuevaPartida.participantes.length > 6 || new Set(nuevaPartida.participantes.map((n) => String(n).trim().toLowerCase())).size !== nuevaPartida.participantes.length) {
+      return res.status(400).json({ error: 'Se requieren entre 2 y 6 participantes con nombres distintos' });
+    }
     partidas.push(nuevaPartida);
     writePartidas(partidas);
 
@@ -164,6 +172,9 @@ app.put('/api/partidas/:id', (req, res) => {
       return res.status(404).json({ error: 'Partida no encontrada' });
     }
 
+    if (!partidaActualizada || String(partidaActualizada.id) !== String(id) || !Array.isArray(partidaActualizada.participantes) || !Array.isArray(partidaActualizada.manos)) {
+      return res.status(400).json({ error: 'Datos de partida inválidos' });
+    }
     partidas[index] = partidaActualizada;
     writePartidas(partidas);
 
