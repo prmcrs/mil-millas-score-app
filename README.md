@@ -100,3 +100,20 @@ Sin infraestructura aún, una evolución razonable sería:
 
 ## Licencia
 MIT
+
+## Cambios en desarrollo (PR #1)
+- `score.js`: motor de puntuación compartido entre navegador y servidor.
+- Participantes configurables entre 2 y 6, en modo individual o equipos.
+- Historial de manos con edición completa y anulación; se puede corregir una partida finalizada.
+- Cálculo de ganadores por máximo puntaje, con soporte para empates.
+- Validación de manos en la API y protección contra guardados concurrentes mediante `version` (los registros antiguos comienzan en versión 0).
+- Escritura atómica del archivo de partidas; el JSON existente no se modifica en el PR.
+- Pruebas de puntuación con `npm test`.
+
+### Antes de integrar
+1. Respaldar `partidas/partidas.json` del servidor donde se usa la aplicación.
+2. Probar carga, edición y anulación con copias de partidas reales, incluyendo partidas antiguas.
+3. Probar dos navegadores editando la misma partida y comprobar que se recibe HTTP 409.
+4. Revisar la autenticación antes de publicar la aplicación en Internet: **la API todavía no tiene control de acceso**. No exponerla públicamente hasta implementar una sesión autenticada en el backend.
+5. Verificar los checks de GitHub Actions y realizar una prueba manual del frontend antes de fusionar.
+
