@@ -175,6 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
     participantes.forEach((participante, index) => {
       const card = document.createElement('div');
       card.className = 'player-card';
+      card.dataset.participante = participante;
       card.innerHTML = `
         <h3>${escapeHtml(participante)}</h3>
         <div class="field-row">
@@ -409,14 +410,33 @@ document.addEventListener('DOMContentLoaded', () => {
       partida.manos.splice(index,1);try{await persistHistory(partida);}catch(e){}
     }
     async function editHand(partida,index){
-      const old=partida.manos[index],updated={...old};
-      for(const name of partida.participantes){
-        const miles=prompt(name+' — recorrido (0 a 1000)',String(old[name+'_recorrido']||0));if(miles===null)return;
-        const safe=prompt(name+' — seguridades (0 a 4)',String(old[name+'_seguridades']||0));if(safe===null)return;
-        updated[name+'_recorrido']=miles;updated[name+'_seguridades']=safe;
-      }
-      try{partida.manos[index]=GAME.hand(partida.participantes,updated,true);await persistHistory(partida);}catch(e){alert(e.message);}
+      const old=partida.manos[index];
+      const form=document.getElementById('formMano');
+      const fields=document.getElementById('formJugadores');
+      const button=form.querySelector('[type="submit"]');
+      const cancel=document.getElementById('cancelarEdicion');
+      partida.participantes.forEach(name=>{
+        const card=Array.from(fields.querySelectorAll('.player-card')).find(c=>c.dataset.participante===name);
+        if(!card)return;
+        card.querySelectorAll('[name]').forEach(input=>{
+          const value=old[input.name];
+          if(input.type==='checkbox')input.checked=GAME.bool(value);
+          else input.value=value===undefined?0:value;
+        });
+      });
+      form.dataset.editIndex=String(index);
+      button.textContent='Guardar cambios';
+      cancel.hidden=false;
+      form.scrollIntoView({behavior:'smooth',block:'start'});
     }
+    function cancelEdit(){
+      const form=document.getElementById('formMano');
+      delete form.dataset.editIndex;
+      form.reset();
+      form.querySelector('[type="submit"]').textContent='Guardar mano';
+      document.getElementById('cancelarEdicion').hidden=true;
+    }
+    document.getElementById('cancelarEdicion').addEventListener('click',cancelEdit);
     async function cargarPartida() {
       const partida = await obtenerPartida();
       if (!partida) {
@@ -473,7 +493,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try { Object.assign(nuevaMano, GAME.hand(partida.participantes, nuevaMano, true)); }
         catch (error) { alert(error.message); return; }
-        partida.manos.push(nuevaMano);
+        const editIndex=event.target.dataset.editIndex;
+        if(editIndex!==undefined)partida.manos[Number(editIndex)]=nuevaMano;
+        else partida.manos.push(nuevaMano);
 
         const totals = getTotales(partida);
         const maxPuntos = Math.max(...Object.values(totals), 0);
